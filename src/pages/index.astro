@@ -1,0 +1,54 @@
+---
+const title = 'Oppenheimor';
+const description = 'Notes, projects, and fragments from Oppenheimor.';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <main>
+      <h1>Hello World.</h1>
+      <p>This is Oppenheimor’s little corner of the internet.</p>
+    </main>
+  </body>
+</html>
+
+<style>
+  :global(*) {
+    box-sizing: border-box;
+  }
+
+  :global(body) {
+    margin: 0;
+    color: #171717;
+    background: #f7f5ef;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+
+  main {
+    display: grid;
+    min-height: 100svh;
+    place-content: center;
+    padding: 2rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(3rem, 12vw, 8rem);
+    letter-spacing: -0.06em;
+    line-height: 0.9;
+  }
+
+  p {
+    margin: 1.5rem 0 0;
+    color: #666;
+    font-size: 1rem;
+  }
+</style>
