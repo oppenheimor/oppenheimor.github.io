@@ -1,0 +1,43 @@
+---
+import '../styles/cursor.css';
+---
+
+<script>
+  // Native cursor images keep the OS hotspot precise, with no tracking overlay.
+  const root = document.documentElement;
+  const mouse = matchMedia('(any-hover: hover) and (any-pointer: fine)');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const contrast = matchMedia('(forced-colors: active)');
+
+  const reset = () => {
+    root.removeAttribute('data-cursor-pressed');
+    root.removeAttribute('data-cursor-native');
+  };
+  const sync = () => {
+    root.toggleAttribute('data-custom-cursor', mouse.matches && !contrast.matches);
+    reset();
+  };
+  sync();
+  mouse.addEventListener('change', sync);
+  contrast.addEventListener('change', sync);
+  reduced.addEventListener('change', reset);
+
+  document.addEventListener('pointerover', (event) => {
+    root.toggleAttribute('data-custom-cursor', event.pointerType === 'mouse' && mouse.matches && !contrast.matches);
+  }, { passive: true });
+  document.addEventListener('pointerdown', (event) => {
+    const enabled = event.pointerType === 'mouse' && mouse.matches && !contrast.matches;
+    root.toggleAttribute('data-custom-cursor', enabled);
+    if (enabled && event.button === 0 && !reduced.matches) root.setAttribute('data-cursor-pressed', '');
+  }, { passive: true });
+  window.addEventListener('pointerup', reset, { passive: true });
+  window.addEventListener('pointercancel', reset, { passive: true });
+  window.addEventListener('blur', reset);
+  document.addEventListener('visibilitychange', reset);
+  document.addEventListener('dragstart', () => {
+    reset();
+    root.setAttribute('data-cursor-native', '');
+  });
+  document.addEventListener('dragend', reset);
+  document.addEventListener('drop', reset);
+</script>

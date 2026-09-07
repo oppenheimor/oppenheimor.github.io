@@ -1,0 +1,38 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/public/tools/archify/cover-full.webp",
+    "sha256": "534cbf06faf39ee1aa04270f819cc2ce28dcd9a900e4c8e3a5f7b804d18e70fb",
+    "width": 1440,
+    "height": 810
+  },
+  "background": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/.agents/skills/toolbox-cover-workspace/iteration-2/background/shared-background-plain-corner.png",
+    "sha256": "99a9e52c82cbc08d9d00151bd08a55fb84f55376ece246dda4d5dbb02053188f",
+    "provenance": "image_gen background with local corner cleanup"
+  },
+  "placement": {
+    "mode": "screenshot",
+    "width": 1440,
+    "height": 810,
+    "left": 480,
+    "top": 270,
+    "scale": 1
+  },
+  "master": {
+    "file": "cover-full.webp",
+    "width": 2400,
+    "height": 1350,
+    "lossless": true,
+    "bytes": 997394
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 90,
+    "bytes": 38380
+  },
+  "warnings": [
+    "Source was not enlarged: less detail/visual occupancy than a larger source. Use a higher-resolution original if needed."
+  ]
+}

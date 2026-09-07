@@ -72,7 +72,7 @@
     display: block;
     width: 100%;
     overflow: visible;
-    filter: drop-shadow(0 14px 20px oklch(0.2 0.006 75 / 0.09));
+    filter: drop-shadow(0 16px 24px oklch(0.04 0.025 255 / 0.72));
   }
 
   .orbit {
@@ -101,10 +101,11 @@
     fill: var(--highlight-soft);
   }
 
-  .leafLeft { fill: var(--canvas); }
+  .leafLeft { fill: var(--signal-soft); }
 
   .satellite {
-    fill: var(--ink);
+    fill: var(--signal);
+    filter: drop-shadow(0 0 7px oklch(0.79 0.105 205 / 0.38));
     animation: satellite 5.5s ease-in-out infinite;
     transform-origin: 120px 145px;
   }

@@ -1,0 +1,377 @@
+---
+import { getCollection } from 'astro:content';
+import SiteBackdrop from '../../components/home/SiteBackdrop.astro';
+import ToolsHeader from '../../components/tools/ToolsHeader.astro';
+import { sortTools, toolPath } from '../../lib/tools';
+import '../../styles/global.css';
+
+const tools = sortTools(await getCollection('tools', ({ data }) => data.published));
+const showSearch = tools.length >= 20;
+const title = '工具箱 — Oppenheimor';
+const description = 'Oppenheimor 用过的工具，以及留在公开网络上的使用痕迹。';
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0c1426" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <SiteBackdrop />
+    <div class="site-column toolsColumn">
+      <ToolsHeader />
+      <main>
+        <header class="toolboxHero">
+          <div class="heroTitle">
+            <h1>工具箱</h1>
+            <span aria-label={`${tools.length} 件工具`}>{String(tools.length).padStart(2, '0')}</span>
+          </div>
+          <p>用过 / 正在用的工具</p>
+        </header>
+
+        {tools.length > 0 ? (
+          <section class="toolIndex" aria-label="工具索引">
+            {showSearch && (
+              <div class="indexHead">
+                <label class="indexSearch">
+                  <span class="visuallyHidden">搜索工具</span>
+                  <input type="search" placeholder="搜索工具" autocomplete="off" data-tool-search />
+                </label>
+              </div>
+            )}
+
+            <ol class="toolList" data-tool-list>
+              {tools.map((tool, index) => (
+                <li
+                  class:list={{ isStarred: tool.data.starred, isRetired: tool.data.retired }}
+                  data-tool-item
+                  data-search={[tool.data.name, ...tool.data.tags].join(' ').toLocaleLowerCase('zh-CN')}
+                >
+                  <a class="toolMain" href={toolPath(tool)}>
+                    <span class="toolNumber" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                    <span class="toolName">
+                      <strong>{tool.data.name}</strong>
+                      {tool.data.retired && <small>已划掉</small>}
+                    </span>
+                    <span class:list={['toolVisual', { typeOnly: !tool.data.cover }]} aria-hidden="true">
+                      {tool.data.cover ? <img src={tool.data.cover} alt="" loading="lazy" /> : <b>/</b>}
+                    </span>
+                  </a>
+                  {tool.data.starred && (
+                    <svg class="toolStar" viewBox="0 0 32 32" role="img" aria-label="已星标">
+                      <path d="M17 3 20.5 11.5 30 13 23 19.5 24 29 15.5 24.5 6 28 8 18.5 2 11 12 10Z" />
+                    </svg>
+                  )}
+                  <a class="toolSource" href={tool.data.url} target="_blank" rel="noreferrer" aria-label={`访问 ${tool.data.name} 源站（新窗口打开）`}>SOURCE <span aria-hidden="true">↗</span></a>
+                </li>
+              ))}
+            </ol>
+            {showSearch && <p class="noResults" data-no-results hidden>没有找到对应的工具。</p>}
+          </section>
+        ) : (
+          <section class="emptyToolbox" aria-label="空工具箱">
+            <p>工具已经记下，只是还没有公开摆上桌面。</p>
+          </section>
+        )}
+      </main>
+      <footer><span>© {year} OPPENHEIMOR®</span></footer>
+    </div>
+    {showSearch && (
+      <script>
+        const input = document.querySelector<HTMLInputElement>('[data-tool-search]');
+        const items = Array.from(document.querySelectorAll<HTMLElement>('[data-tool-item]'));
+        const noResults = document.querySelector<HTMLElement>('[data-no-results]');
+
+        input?.addEventListener('input', () => {
+          const query = input.value.trim().toLocaleLowerCase('zh-CN');
+          let visible = 0;
+          items.forEach((item) => {
+            const matches = !query || (item.dataset.search ?? '').includes(query);
+            item.hidden = !matches;
+            if (matches) visible += 1;
+          });
+          if (noResults) noResults.hidden = visible !== 0;
+        });
+      </script>
+    )}
+  </body>
+</html>
+
+<style>
+  .toolsColumn { max-width: 1100px; }
+
+  .toolboxHero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.55fr);
+    gap: clamp(42px, 8vw, 104px);
+    align-items: end;
+    padding: clamp(88px, 14vh, 140px) 0 clamp(64px, 10vh, 96px);
+  }
+
+  .heroTitle { position: relative; width: fit-content; }
+  h1 {
+    margin: 0;
+    font-size: clamp(78px, 12vw, 136px);
+    font-weight: 700;
+    line-height: 0.82;
+    letter-spacing: -0.075em;
+  }
+  .heroTitle > span {
+    position: absolute;
+    top: -1.6em;
+    right: -2.5em;
+    color: var(--signal);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+  .toolboxHero > p {
+    max-width: 28ch;
+    margin: 0 0 2px;
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  .toolIndex { padding-bottom: 8vh; }
+  .indexHead {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 24px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .indexSearch input {
+    width: min(240px, 38vw);
+    padding: 7px 0;
+    border: 0;
+    border-bottom: 1px solid var(--hairline);
+    border-radius: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--ink);
+    font-size: 13px;
+  }
+  .indexSearch input::placeholder { color: var(--text-muted); }
+  .indexSearch input:focus-visible { border-color: var(--signal); }
+  .visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .toolList {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .toolList li {
+    position: relative;
+    min-width: 0;
+    border: 1px solid var(--hairline);
+    background: var(--canvas);
+  }
+  .toolList li::before,
+  .toolList li::after {
+    position: absolute;
+    z-index: 2;
+    width: 13px;
+    height: 13px;
+    border-color: oklch(0.47 0.06 254);
+    border-style: solid;
+    content: '';
+    opacity: 0.58;
+    pointer-events: none;
+    transition: border-color 0.35s var(--ease-out), opacity 0.35s var(--ease-out);
+  }
+  .toolList li::before { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
+  .toolList li::after { right: 8px; bottom: 8px; border-width: 0 1px 1px 0; }
+  .toolList li[hidden] { display: none; }
+  .toolMain {
+    display: grid;
+    height: 100%;
+    min-height: 256px;
+    grid-template-columns: 24px minmax(0, 1fr) 64px;
+    grid-template-rows: auto minmax(46px, auto);
+    gap: 20px 10px;
+    align-items: center;
+    padding: 20px;
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.35s var(--ease-out);
+  }
+
+  .toolNumber {
+    grid-column: 1;
+    grid-row: 2;
+    color: var(--text-muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+  .toolName { min-width: 0; grid-column: 2; grid-row: 2; }
+  .toolName strong {
+    display: block;
+    font-size: clamp(28px, 3.2vw, 38px);
+    font-weight: 700;
+    line-height: 0.96;
+    letter-spacing: -0.05em;
+    overflow-wrap: anywhere;
+  }
+  .toolName small {
+    display: block;
+    margin-top: 7px;
+    color: var(--text-muted);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  .toolVisual {
+    display: grid;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    place-items: center;
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: 0 18px 34px -28px var(--shadow);
+    transform: rotate(-0.45deg);
+    transition: transform 0.55s var(--ease-out);
+  }
+  .toolList li:nth-child(3n + 2) .toolVisual { transform: translateY(5px) rotate(0.55deg); }
+  .toolList li:nth-child(3n) .toolVisual { transform: rotate(0.2deg); }
+  .toolVisual img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.55s var(--ease-out);
+  }
+  .toolVisual b {
+    color: var(--highlight);
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1;
+    transform: rotate(8deg);
+    transition: transform 0.55s var(--ease-out);
+  }
+
+  .toolStar {
+    position: absolute;
+    top: 11px;
+    right: 12px;
+    z-index: 3;
+    width: 31px;
+    height: 31px;
+    padding: 4px;
+    overflow: visible;
+    background: transparent;
+    color: var(--highlight);
+    fill: none;
+    stroke: currentColor;
+    stroke-linejoin: round;
+    stroke-width: 2.4;
+    transform: rotate(-10deg);
+    transition: transform 0.45s var(--ease-out);
+  }
+
+  .toolSource {
+    position: absolute;
+    right: 20px;
+    bottom: 28px;
+    z-index: 4;
+    color: var(--highlight);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+  .toolSource span {
+    display: inline-block;
+    margin-left: 3px;
+    font-family: inherit;
+    font-size: 15px;
+    transition: transform 0.35s var(--ease-out);
+  }
+  .isRetired .toolName strong {
+    color: var(--text-muted);
+    text-decoration: line-through;
+    text-decoration-thickness: 0.07em;
+  }
+  .isRetired .toolVisual { filter: grayscale(0.8); opacity: 0.55; }
+
+  .noResults {
+    margin: 0;
+    padding: 64px 0;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .emptyToolbox {
+    min-height: 320px;
+    padding: 90px 0;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    color: var(--text-muted);
+    text-align: center;
+  }
+  footer a { color: inherit; text-decoration: none; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .toolMain:hover { background: oklch(0.17 0.038 267 / 0.72); }
+    .toolList li:hover::before,
+    .toolList li:hover::after { border-color: var(--highlight); opacity: 1; }
+    .toolMain:hover .toolVisual { transform: translateY(-4px) rotate(-1deg); }
+    .toolMain:hover .toolVisual img { transform: scale(1.035) rotate(-0.5deg); }
+    .toolList li:hover .toolStar { transform: rotate(7deg) scale(1.08); }
+    .toolMain:hover .toolVisual b { transform: rotate(-3deg) scale(1.06); }
+    .toolSource:hover span { transform: translate(3px, -3px); }
+  }
+
+  @media (max-width: 980px) {
+    .toolList { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  }
+
+  @media (max-width: 700px) {
+    .toolboxHero {
+      grid-template-columns: 1fr;
+      gap: 36px;
+      padding: 82px 0 64px;
+    }
+    h1 { font-size: clamp(72px, 23vw, 104px); }
+    .heroTitle > span { top: -1.4em; right: -2em; }
+    .toolboxHero > p { max-width: 31ch; font-size: 14px; }
+
+    .indexHead { min-height: 42px; }
+    .indexSearch input { width: 150px; }
+    .toolList { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .toolMain {
+      min-height: 174px;
+      grid-template-columns: 20px minmax(0, 1fr) 16px;
+      grid-template-rows: auto minmax(32px, auto);
+      gap: 12px 5px;
+      padding: 11px;
+    }
+    .toolName strong { font-size: clamp(20px, 6vw, 26px); }
+    .toolStar { top: 6px; right: 7px; width: 25px; height: 25px; padding: 3px; }
+    .toolVisual { aspect-ratio: 16 / 10; }
+    .toolSource { right: 11px; bottom: 21px; font-size: 0; }
+    .toolSource span { margin: 0; font-size: 15px; }
+  }
+</style>

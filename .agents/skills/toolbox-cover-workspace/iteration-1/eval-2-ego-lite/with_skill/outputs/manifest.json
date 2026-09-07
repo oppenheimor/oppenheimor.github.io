@@ -1,0 +1,36 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/public/tools/ego-lite/cover-full.webp",
+    "sha256": "c27162bd39eaf5142aea8c40016c88215c1bbca63dfec5a924364e89ef0dc116",
+    "width": 2880,
+    "height": 1620
+  },
+  "background": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/.agents/skills/toolbox-cover-workspace/iteration-1/background/shared-background-plate.png",
+    "sha256": "a57d44097c0127ef924897d5913d0c06ed50486b71d65c3ce5a9ae64c49d6b74",
+    "provenance": "image_gen"
+  },
+  "placement": {
+    "mode": "screenshot",
+    "width": 1920,
+    "height": 1080,
+    "left": 240,
+    "top": 135,
+    "scale": 0.6666666666666666
+  },
+  "master": {
+    "file": "cover-full.webp",
+    "width": 2400,
+    "height": 1350,
+    "lossless": true,
+    "bytes": 620142
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 90,
+    "bytes": 17966
+  },
+  "warnings": []
+}

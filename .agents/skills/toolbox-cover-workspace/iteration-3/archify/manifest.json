@@ -1,0 +1,41 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/public/tools/archify/cover-full.webp",
+    "sha256": "534cbf06faf39ee1aa04270f819cc2ce28dcd9a900e4c8e3a5f7b804d18e70fb",
+    "width": 1440,
+    "height": 810
+  },
+  "crop": null,
+  "background": {
+    "provenance": "deterministic-source-adaptive",
+    "color": {
+      "r": 15,
+      "g": 23,
+      "b": 41
+    },
+    "method": "opaque-corner-average"
+  },
+  "placement": {
+    "mode": "banner",
+    "width": 1200,
+    "height": 675,
+    "left": 0,
+    "top": 0,
+    "scale": 0.8333333333333334
+  },
+  "preview": {
+    "file": "original.webp",
+    "width": 1440,
+    "height": 810,
+    "lossless": true,
+    "bytes": 679946
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 92,
+    "bytes": 75176
+  },
+  "warnings": []
+}

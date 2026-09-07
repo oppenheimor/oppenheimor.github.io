@@ -1,13 +1,18 @@
 :root {
-  --canvas: oklch(0.992 0.003 88);
-  --ink: oklch(0.205 0.006 75);
-  --text-secondary: oklch(0.45 0.008 75);
-  --text-muted: oklch(0.66 0.006 75);
-  --hairline: oklch(0.92 0.004 75);
-  --highlight: oklch(0.89 0.12 88);
-  --highlight-soft: oklch(0.96 0.04 88);
+  --canvas: oklch(0.125 0.032 264);
+  --surface: oklch(0.17 0.038 267);
+  --surface-raised: oklch(0.215 0.047 264);
+  --ink: oklch(0.93 0.018 245);
+  --text-secondary: oklch(0.72 0.034 247);
+  --text-muted: oklch(0.56 0.032 250);
+  --hairline: oklch(0.3 0.044 262);
+  --highlight: oklch(0.64 0.17 263);
+  --highlight-soft: oklch(0.23 0.075 268);
+  --signal: oklch(0.79 0.105 205);
+  --signal-soft: oklch(0.24 0.045 210);
+  --shadow: oklch(0.045 0.026 267 / 0.76);
   --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
-  color-scheme: light;
+  color-scheme: dark;
   font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
   background: var(--canvas);
   color: var(--ink);
@@ -45,7 +50,7 @@ a {
 
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--signal);
   outline-offset: 5px;
 }
 

@@ -1,0 +1,11 @@
+{
+  "eval_id": 2,
+  "eval_name": "ego-lite",
+  "prompt": "统一 ego-lite 封面：保留原图，使用共享生成背景，输出 16:9 缩略图和高清图。",
+  "assertions": [
+    "exact 16:9 output sizes",
+    "no source upscaling",
+    "source fits inside canvas",
+    "shared image_gen background"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "expectations": [
+    {
+      "text": "Exact output dimensions",
+      "passed": true,
+      "evidence": "master 2400x1350; thumbnail 1200x675"
+    },
+    {
+      "text": "No source upscaling",
+      "passed": true,
+      "evidence": "scale=0.6666666666666666"
+    },
+    {
+      "text": "Shared native image_gen background",
+      "passed": true,
+      "evidence": "a57d44097c0127ef924897d5913d0c06ed50486b71d65c3ce5a9ae64c49d6b74"
+    }
+  ]
+}

@@ -1,13 +1,24 @@
+---
+import { getCollection } from 'astro:content';
+import { sortTools, toolPath } from '../../lib/tools';
+
+const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.published)).filter((tool) => !tool.data.retired).slice(0, 4);
+---
+
 <section id="garden" class="garden" aria-labelledby="garden-heading" data-reveal>
   <span class="sectionNumber" aria-hidden="true"><span>0</span><span data-section-digit>1</span></span>
   <h2 id="garden-heading" class="visuallyHidden">Oppenheimor 的数字花园</h2>
 
-  <div class="tabs" role="tablist" aria-label="内容分类">
-    <button id="tab-projects" class="tab isActive" type="button" role="tab" aria-selected="true" aria-controls="panel-projects" tabindex="0">项目</button>
-    <button id="tab-notes" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-notes" tabindex="-1">Notes</button>
-    <button id="tab-writing" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-writing" tabindex="-1">文章</button>
-    <button id="tab-about" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-about" tabindex="-1">关于我</button>
-    <button id="tab-life" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-life" tabindex="-1">生活</button>
+  <span class="tabsSentinel" data-tabs-sentinel aria-hidden="true"></span>
+  <div class="tabsDock" data-tabs-dock>
+    <div class="tabs" role="tablist" aria-label="内容分类">
+      <button id="tab-projects" class="tab isActive" type="button" role="tab" aria-selected="true" aria-controls="panel-projects" tabindex="0">项目</button>
+      <button id="tab-tools" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-tools" tabindex="-1">工具箱</button>
+      <button id="tab-notes" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-notes" tabindex="-1">Notes</button>
+      <button id="tab-writing" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-writing" tabindex="-1">文章</button>
+      <button id="tab-about" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-about" tabindex="-1">关于我</button>
+      <button id="tab-life" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-life" tabindex="-1">生活</button>
+    </div>
   </div>
 
   <div id="panel-projects" class="panel panelProjects panelEnter" role="tabpanel" aria-labelledby="tab-projects">
@@ -31,6 +42,33 @@
       </a>
     </article>
     <p class="quietLine">下一件作品还在路上。这里不会用虚构案例填满版面。</p>
+  </div>
+
+  <div id="panel-tools" class="panel toolsPanel typeVariant trayVariant" role="tabpanel" aria-labelledby="tab-tools" hidden>
+    {toolPreview.length > 0 ? (
+      <div class="homeToolDesk">
+        {toolPreview.map((tool) => (
+          <article class:list={['homeToolFile', { textOnly: !tool.data.cover }]}>
+            {tool.data.cover && <span class="fileCover" aria-hidden="true"><img src={tool.data.cover} alt="" loading="lazy" /></span>}
+            {!tool.data.cover && <span class="typeCover" aria-hidden="true">/</span>}
+            <a class="fileCaption" href={toolPath(tool)}>
+              <strong>{tool.data.name}</strong>
+              {tool.data.starred && (
+                <svg class="fileStar" viewBox="0 0 32 32" role="img" aria-label="已星标">
+                  <path d="M17 3 20.5 11.5 30 13 23 19.5 24 29 15.5 24.5 6 28 8 18.5 2 11 12 10Z" />
+                </svg>
+              )}
+            </a>
+            <a class="fileSource" href={tool.data.url} target="_blank" rel="noreferrer" aria-label={`访问 ${tool.data.name} 源站（新窗口打开）`}>SOURCE <span aria-hidden="true">↗</span></a>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <div class="statement compactStatement">
+        <strong>工具已经记下，只是还没有公开摆上桌面。</strong>
+      </div>
+    )}
+    <a class="toolboxLink" href="/tools">打开工具箱 <span aria-hidden="true">→</span></a>
   </div>
 
   <div id="panel-notes" class="panel textPanel" role="tabpanel" aria-labelledby="tab-notes" hidden>
@@ -75,8 +113,18 @@
 <script>
   const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
   const digit = document.querySelector<HTMLElement>('[data-section-digit]');
+  const tabsDock = document.querySelector<HTMLElement>('[data-tabs-dock]');
+  const tabsSentinel = document.querySelector<HTMLElement>('[data-tabs-sentinel]');
 
-  const selectTab = (selected: HTMLButtonElement) => {
+  if (tabsDock && tabsSentinel && 'IntersectionObserver' in window) {
+    const stickyObserver = new IntersectionObserver(([entry]) => {
+      const isStuck = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+      tabsDock.classList.toggle('isStuck', isStuck);
+    }, { rootMargin: '-1px 0px 0px', threshold: 0 });
+    stickyObserver.observe(tabsSentinel);
+  }
+
+  const selectTab = (selected: HTMLButtonElement, shouldScroll = true, shouldPersist = true) => {
     tabs.forEach((tab) => {
       const active = tab === selected;
       tab.classList.toggle('isActive', active);
@@ -89,7 +137,11 @@
       }
     });
     if (digit) digit.textContent = String(tabs.indexOf(selected) + 1);
-    selected.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    if (shouldPersist) {
+      const currentState = typeof history.state === 'object' && history.state !== null ? history.state : {};
+      history.replaceState({ ...currentState, gardenTab: selected.id }, '');
+    }
+    if (shouldScroll) selected.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   };
 
   tabs.forEach((tab, index) => {
@@ -106,6 +158,9 @@
       selectTab(tabs[next]);
     });
   });
+
+  const savedTab = tabs.find((tab) => tab.id === history.state?.gardenTab);
+  if (savedTab) selectTab(savedTab, false, false);
 </script>
 
 <style>
@@ -137,19 +192,59 @@
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.04em;
-    -webkit-text-stroke: 1px oklch(0.2 0.006 75 / 0.1);
+    -webkit-text-stroke: 1px oklch(0.72 0.08 245 / 0.16);
     user-select: none;
   }
 
+  .tabsSentinel {
+    display: block;
+    height: 1px;
+    margin-bottom: -1px;
+    pointer-events: none;
+  }
+
+  .tabsDock {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 18px);
+    z-index: 10;
+    isolation: isolate;
+    margin-bottom: 48px;
+  }
+
+  .tabsDock::before {
+    position: absolute;
+    top: calc(-18px - env(safe-area-inset-top, 0px));
+    bottom: -26px;
+    left: 50%;
+    z-index: -1;
+    width: 100vw;
+    background: linear-gradient(
+      to bottom,
+      var(--canvas) 0%,
+      var(--canvas) 72%,
+      oklch(0.125 0.032 264 / 0.78) 86%,
+      oklch(0.125 0.032 264 / 0) 100%
+    );
+    backdrop-filter: blur(10px) saturate(0.86);
+    content: '';
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%);
+    transition: opacity 0.45s var(--ease-out);
+    -webkit-backdrop-filter: blur(10px) saturate(0.86);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 82%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black 82%, transparent 100%);
+  }
+
+  .tabsDock.isStuck::before { opacity: 1; }
+
   .tabs {
     position: relative;
-    z-index: 2;
     display: flex;
     align-items: flex-end;
     justify-content: flex-start;
     gap: 42px;
     width: 100%;
-    margin-bottom: 48px;
     padding: 0 0 16px;
   }
 
@@ -162,7 +257,7 @@
     padding: 0 0 10px;
     border: 0;
     background: transparent;
-    color: oklch(0.76 0.004 75);
+    color: oklch(0.57 0.035 245);
     cursor: pointer;
     font-size: clamp(30px, 5.2vw, 48px);
     font-weight: 700;
@@ -233,7 +328,7 @@
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.02em;
-    -webkit-text-stroke: 1px oklch(0.2 0.006 75 / 0.11);
+    -webkit-text-stroke: 1px oklch(0.72 0.08 245 / 0.18);
     transition: transform 0.9s var(--ease-out);
   }
 
@@ -244,10 +339,10 @@
     position: relative;
     height: 202px;
     overflow: hidden;
-    border: 1px solid oklch(0.88 0.006 75);
+    border: 1px solid var(--hairline);
     border-radius: 14px;
     background: var(--highlight-soft);
-    box-shadow: 0 18px 35px oklch(0.2 0.006 75 / 0.08);
+    box-shadow: 0 18px 35px var(--shadow);
     transform: rotate(-2deg);
     transition: transform 0.7s var(--ease-out);
   }
@@ -258,17 +353,17 @@
     height: 6px;
     margin: 12px 0 0 6px;
     border-radius: 50%;
-    background: oklch(0.7 0.006 75);
+    background: var(--text-muted);
   }
 
-  .windowDot:first-child { margin-left: 13px; background: var(--highlight); }
+  .windowDot:first-child { margin-left: 13px; background: var(--signal); }
 
   .miniGrid {
     position: absolute;
     inset: 30px 0 0;
     background-image:
-      linear-gradient(oklch(0.2 0.006 75 / 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.2 0.006 75 / 0.06) 1px, transparent 1px);
+      linear-gradient(oklch(0.82 0.04 245 / 0.09) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.82 0.04 245 / 0.09) 1px, transparent 1px);
     background-size: 18px 18px;
   }
 
@@ -290,7 +385,7 @@
     border: 2px solid var(--ink);
     border-radius: 50%;
     background: var(--highlight);
-    box-shadow: 18px -18px 0 -12px var(--ink);
+    box-shadow: 18px -18px 0 -12px var(--signal);
   }
 
   .eyebrow,
@@ -335,10 +430,304 @@
     line-height: 1.7;
   }
 
-  .textPanel {
+  .textPanel,
+  .toolsPanel {
     min-height: 510px;
     padding: 60px 0 20px;
   }
+
+  .toolsPanel { min-height: 0; padding-top: 12px; }
+
+  .homeToolDesk {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    padding: 1px;
+    background: var(--hairline);
+  }
+
+  .homeToolFile {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px;
+    background: var(--canvas);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .homeToolFile:focus-visible { position: relative; z-index: 1; outline-offset: -4px; }
+  .fileCover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; }
+  .fileCaption { display: flex; justify-content: space-between; align-items: center; gap: 16px; transition: transform 0.4s var(--ease-out); }
+  .fileCaption strong { min-width: 0; font-size: clamp(22px, 3vw, 28px); letter-spacing: -0.04em; overflow-wrap: anywhere; }
+  .fileStar {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    overflow: visible;
+    color: var(--highlight);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    transform: rotate(-9deg);
+    transition: transform 0.5s var(--ease-out);
+  }
+  .textOnly { justify-content: center; }
+  .textOnly .fileCaption strong { font-size: clamp(30px, 4vw, 42px); }
+  .homeToolFile:focus-visible .fileCaption { transform: translateY(-2px); }
+
+  .typeVariant .homeToolDesk {
+    gap: 20px 42px;
+    padding: 16px 0 32px;
+    background: transparent;
+    align-items: start;
+  }
+  .typeVariant .homeToolFile {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    min-height: 205px;
+    gap: 0;
+    padding: 24px 0;
+    background: transparent;
+    isolation: isolate;
+  }
+  .typeVariant .homeToolFile:nth-child(even) { margin-top: 76px; }
+  .typeVariant .fileCover {
+    grid-column: 2;
+    grid-row: 1;
+    width: 115%;
+    max-width: none;
+    margin-left: -15%;
+    aspect-ratio: 4 / 3;
+    border-radius: 7px;
+    object-fit: contain;
+    background: var(--surface);
+    box-shadow: 0 18px 30px -18px var(--shadow);
+    transform: rotate(5deg) translateY(-24px);
+    transition: transform 0.6s var(--ease-out);
+  }
+  .typeVariant .homeToolFile:nth-child(even) .fileCover { transform: rotate(-5deg) translateY(-24px); }
+  .typeVariant .fileCaption {
+    position: relative;
+    z-index: 1;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-content: flex-start;
+    align-self: end;
+    gap: 10px;
+    padding: 0 0 2px;
+    transform: none;
+  }
+  .typeVariant .fileCaption strong {
+    position: relative;
+    font-size: clamp(35px, 4.6vw, 52px);
+    line-height: 0.95;
+    letter-spacing: -0.055em;
+  }
+  .typeVariant .fileCaption strong::after {
+    position: absolute;
+    z-index: -1;
+    right: -3px;
+    bottom: -3px;
+    left: -3px;
+    height: 0.2em;
+    background: var(--highlight);
+    content: '';
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s var(--ease-out);
+  }
+  .typeVariant .fileStar { align-self: center; }
+  .typeVariant .textOnly { min-height: 0; padding: 36px 0; }
+  .typeVariant .textOnly .fileCaption { grid-row: auto; align-self: center; }
+  .typeVariant .textOnly .fileCaption strong { font-size: clamp(38px, 5vw, 58px); }
+  .typeVariant .homeToolFile:focus-visible { outline-offset: 6px; }
+  .typeVariant .homeToolFile:focus-visible .fileCaption strong::after { transform: scaleX(1); }
+  .typeVariant .homeToolFile:focus-visible .fileCover { transform: translateY(-31px) rotate(0); }
+
+  @media (hover: hover) and (pointer: fine) {
+    .typeVariant .homeToolFile:hover .fileCaption { transform: none; }
+    .typeVariant .fileCaption:hover strong::after { transform: scaleX(1); }
+  }
+
+  @media (max-width: 700px) {
+    .typeVariant .homeToolDesk { grid-template-columns: 1fr; gap: 22px; }
+    .typeVariant .homeToolFile { min-height: 190px; padding: 20px 4px; }
+    .typeVariant .homeToolFile:nth-child(even) { margin-top: 0; }
+    .typeVariant .fileCover { width: 100%; margin-left: 0; }
+    .typeVariant .fileCaption strong { font-size: clamp(36px, 10vw, 52px); }
+    .typeVariant .textOnly { min-height: 0; padding: 30px 4px; }
+  }
+
+  .trayVariant .homeToolDesk {
+    position: relative;
+    padding: 0;
+    gap: 32px;
+    grid-auto-rows: 1fr;
+    align-items: stretch;
+  }
+  .trayVariant .homeToolDesk:has(> article:nth-child(4))::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    background: var(--highlight);
+    opacity: 0.5;
+    clip-path: polygon(0 30%, 38% 30%, 38% 0, 70% 0, 100% 30%, 70% 30%, 70% 100%, 38% 100%, 0 65%);
+    transform: translate(-50%, -50%);
+    content: '';
+    pointer-events: none;
+  }
+  .trayVariant .homeToolFile,
+  .trayVariant .homeToolFile:nth-child(even) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    gap: 24px;
+    min-height: 240px;
+    margin: 0;
+    padding: 28px 24px;
+  }
+  .trayVariant .homeToolFile::before,
+  .trayVariant .homeToolFile::after {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: oklch(0.43 0.05 255);
+    border-style: solid;
+    content: '';
+    pointer-events: none;
+  }
+  .trayVariant .homeToolFile::before { top: 0; left: 0; border-width: 1px 0 0 1px; }
+  .trayVariant .homeToolFile::after { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
+  .trayVariant .fileCover,
+  .trayVariant .homeToolFile:nth-child(even) .fileCover {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    margin: 0;
+    aspect-ratio: 16 / 9;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+  }
+  .trayVariant .fileCaption,
+  .trayVariant .textOnly .fileCaption { grid-column: 1; grid-row: 2; align-self: end; padding-right: 82px; }
+  .trayVariant .fileCaption strong,
+  .trayVariant .textOnly .fileCaption strong { font-size: clamp(30px, 4vw, 44px); }
+  .typeCover { display: none; }
+  .trayVariant .typeCover {
+    display: grid;
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    place-items: center;
+    color: var(--highlight);
+    font-size: clamp(80px, 14vw, 150px);
+    font-weight: 700;
+    line-height: 1;
+    transition: transform 0.6s var(--ease-out);
+  }
+  .trayVariant .homeToolFile:focus-visible .fileStar { transform: rotate(7deg); }
+  .trayVariant .homeToolFile:focus-visible::before,
+  .trayVariant .homeToolFile:focus-visible::after { border-color: var(--highlight); }
+  .trayVariant .homeToolFile:focus-visible .fileCover,
+  .trayVariant .homeToolFile:focus-visible .typeCover { transform: translateY(-5px) rotate(-4deg); }
+  @media (hover: hover) and (pointer: fine) {
+    .trayVariant .fileCaption:hover .fileStar { transform: rotate(7deg); }
+    .trayVariant .homeToolFile:hover::before,
+    .trayVariant .homeToolFile:hover::after { border-color: var(--highlight); }
+    .trayVariant .homeToolFile:hover .fileCover { transform: translateY(-5px) rotate(-4deg); }
+    .fileSource:hover span { transform: translate(3px, -3px); }
+  }
+  @media (max-width: 700px) {
+    .trayVariant .homeToolDesk { grid-auto-rows: auto; gap: 24px; }
+    .trayVariant .homeToolDesk::after { display: none; }
+    .trayVariant .homeToolFile { padding: 24px; }
+    .trayVariant .fileCaption,
+    .trayVariant .textOnly .fileCaption { padding-right: 34px; }
+    .fileSource { right: 24px; bottom: 30px; font-size: 0; }
+    .fileSource span { margin: 0; font-size: 15px; }
+    .trayVariant .textOnly { min-height: 140px; }
+  }
+
+  .fileCover img { display: block; width: 100%; height: auto; max-height: 100%; border-radius: 10px; object-fit: contain; }
+  .fileSource {
+    position: absolute;
+    right: 24px;
+    bottom: 32px;
+    z-index: 3;
+    color: var(--highlight);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+  .fileSource span {
+    display: inline-block;
+    margin-left: 3px;
+    font-size: 15px;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .trayVariant a.fileCaption { position: static; color: inherit; text-decoration: none; transform: none; }
+  .trayVariant a.fileCaption::before { position: absolute; inset: 0; content: ''; }
+  .trayVariant a.fileCaption strong { position: relative; }
+  .trayVariant a.fileCaption:focus-visible { outline: none; }
+  .trayVariant .homeToolFile:has(a.fileCaption:focus-visible) { outline: 2px solid var(--ink); outline-offset: 6px; }
+  .trayVariant .homeToolFile:focus-within::before,
+  .trayVariant .homeToolFile:focus-within::after { border-color: var(--highlight); }
+  .trayVariant .fileCaption:focus-visible strong::after { transform: scaleX(1); }
+  .trayVariant .homeToolFile .fileCover:focus-visible { transform: translateY(-5px) rotate(-4deg); }
+
+  .compactStatement strong { max-width: 18ch; font-size: clamp(31px, 5vw, 50px); }
+
+  .toolboxLink {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 48px;
+    margin-left: 24px;
+    color: var(--text-secondary);
+    font-size: clamp(15px, 1.7vw, 17px);
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    transition: color 0.45s var(--ease-out), transform 0.45s var(--ease-out);
+  }
+
+  .toolboxLink::after {
+    position: absolute;
+    right: -4px;
+    bottom: 0.08em;
+    left: -4px;
+    z-index: -1;
+    height: 0.42em;
+    background: var(--highlight);
+    content: '';
+    opacity: 0.58;
+    transform: rotate(-0.45deg) scaleX(0.98);
+    transform-origin: left;
+    transition: opacity 0.45s var(--ease-out), transform 0.55s var(--ease-out);
+  }
+
+  .toolboxLink span {
+    opacity: 0.72;
+    transition: opacity 0.45s var(--ease-out), transform 0.5s var(--ease-out);
+  }
+
+  .toolboxLink:focus-visible { color: var(--ink); transform: translateY(-2px); }
+  .toolboxLink:focus-visible::after { opacity: 0.9; transform: rotate(0) scaleX(1.03); }
+  .toolboxLink:focus-visible span { opacity: 1; transform: translateX(7px); }
 
   .panelKicker {
     display: flex;
@@ -460,19 +849,32 @@
 
   @media (hover: hover) and (pointer: fine) {
     .tab:not(.isActive):hover { color: var(--text-secondary); opacity: 1; transform: translateY(-2px); }
-    .projectHitbox:hover .projectCard { border-color: oklch(0.86 0.006 75); box-shadow: 0 3px 6px oklch(0.2 0.006 75 / 0.04), 0 26px 48px -18px oklch(0.2 0.006 75 / 0.18); transform: translateY(-5px); }
+    .projectHitbox:hover .projectCard { border-color: oklch(0.48 0.11 250); box-shadow: 0 3px 6px var(--shadow), 0 26px 48px -18px var(--shadow); transform: translateY(-5px); }
     .projectHitbox:hover .window { transform: rotate(0deg) scale(1.02); }
     .projectHitbox:hover .projectNumber { transform: translateY(-6px); }
     .projectHitbox:hover .go span { transform: translateX(7px); }
     .articleRow:hover { padding-left: 20px; }
+    .homeToolFile:hover .fileCaption { transform: translateY(-2px); }
+    .toolboxLink:hover { color: var(--ink); transform: translateY(-2px); }
+    .toolboxLink:hover::after { opacity: 0.9; transform: rotate(0) scaleX(1.03); }
+    .toolboxLink:hover span { opacity: 1; transform: translateX(7px); }
   }
 
   @media (max-width: 700px) {
     .garden { padding: 8vh 0; }
 
+    .tabsDock {
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      margin: 0 -20px 32px;
+    }
+
+    .tabsDock::before {
+      top: calc(-10px - env(safe-area-inset-top, 0px));
+      bottom: -22px;
+    }
+
     .tabs {
       width: auto;
-      margin: 0 -20px 32px;
       padding: 0 20px 10px;
       gap: 20px;
       overflow-x: auto;
@@ -507,10 +909,16 @@
     }
 
     .textPanel,
+    .toolsPanel,
     .writingPanel {
       min-height: 470px;
       padding-top: 32px;
     }
+
+    .toolsPanel { min-height: 0; padding-top: 8px; }
+    .homeToolDesk { grid-template-columns: 1fr; }
+    .homeToolFile { padding: 20px; }
+    .textOnly { min-height: 160px; }
 
     .panelKicker { margin-bottom: 52px; }
 

@@ -1,0 +1,51 @@
+/* Phosphor Duotone, 32px. Hotspots: arrow tip 4,4; fingertip 15,2; lens center 14,14. */
+:root {
+  --cursor-arrow: url('/cursors/arrow.svg') 4 4, auto;
+  --cursor-action: url('/cursors/hand.svg') 15 2, pointer;
+  --cursor-action-down: url('/cursors/hand-pressed.svg') 15 2, pointer;
+  --cursor-zoom: url('/cursors/zoom.svg') 14 14, zoom-in;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) and (forced-colors: none) {
+  html[data-custom-cursor]:not([data-cursor-native]) {
+    cursor: var(--cursor-arrow);
+    --cursor-interactive: var(--cursor-action);
+  }
+
+  /* Text stays selectable; controls retain their familiar editing affordance. */
+  html[data-custom-cursor]:not([data-cursor-native]) :where(p, h1, h2, h3, h4, h5, h6, li, dt, dd, blockquote, pre, code, td, th) {
+    cursor: text;
+  }
+
+  html[data-custom-cursor]:not([data-cursor-native]) :is(a[href], button, summary, [role='button'], [role='tab'], input[type='button'], input[type='submit'], input[type='reset'], input[type='checkbox'], input[type='radio'], select, label[for]) {
+    cursor: var(--cursor-interactive);
+  }
+  html[data-custom-cursor]:not([data-cursor-native]) :is(a[href], button, summary, [role='button'], [role='tab']) * {
+    cursor: inherit;
+  }
+
+  /* Never replace resize/grab cursors or editable-field cursors with a link shape. */
+  html[data-custom-cursor]:not([data-cursor-native]) :is(textarea, input:not([type]), input[type='text'], input[type='search'], input[type='email'], input[type='url'], input[type='password'], input[type='tel'], input[type='number'], [contenteditable]:not([contenteditable='false'])) {
+    cursor: auto;
+  }
+  html[data-custom-cursor]:not([data-cursor-native]) [contenteditable]:not([contenteditable='false']) * { cursor: auto; }
+  html[data-custom-cursor]:not([data-cursor-native]) :is([draggable='true'], [draggable='true'] *, input[type='range'], [role='slider'], [role='separator']) { cursor: revert; }
+  html[data-custom-cursor]:not([data-cursor-native]) :is(:disabled, [aria-disabled='true'], [aria-disabled='true'] *) { cursor: not-allowed; }
+}
+
+/* Preview is a different action from navigation, even with custom cursors enabled. */
+button[data-cover-preview], button[data-cover-preview] * {
+  cursor: zoom-in;
+}
+@media (any-hover: hover) and (any-pointer: fine) and (forced-colors: none) {
+  html[data-custom-cursor]:not([data-cursor-native]) button[data-cover-preview],
+  html[data-custom-cursor]:not([data-cursor-native]) button[data-cover-preview] * {
+    cursor: var(--cursor-zoom);
+  }
+}
+
+@media (any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+  html[data-custom-cursor][data-cursor-pressed]:not([data-cursor-native]) {
+    --cursor-interactive: var(--cursor-action-down);
+  }
+}

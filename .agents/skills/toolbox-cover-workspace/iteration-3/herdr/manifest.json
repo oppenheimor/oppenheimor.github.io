@@ -1,0 +1,41 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/public/tools/herdr/cover-full.webp",
+    "sha256": "d466c664b82d9fc89467aa27281d0158f0ffc82b009601a0a797abdcf98c5649",
+    "width": 2742,
+    "height": 1182
+  },
+  "crop": null,
+  "background": {
+    "provenance": "deterministic-source-adaptive",
+    "color": {
+      "r": 235,
+      "g": 229,
+      "b": 210
+    },
+    "method": "opaque-corner-average"
+  },
+  "placement": {
+    "mode": "screenshot",
+    "width": 1200,
+    "height": 517,
+    "left": 0,
+    "top": 79,
+    "scale": 0.437636761487965
+  },
+  "preview": {
+    "file": "original.webp",
+    "width": 2742,
+    "height": 1182,
+    "lossless": true,
+    "bytes": 93896
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 92,
+    "bytes": 47646
+  },
+  "warnings": []
+}

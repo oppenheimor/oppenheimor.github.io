@@ -1,0 +1,6 @@
+{
+  "source": ".agents/skills/toolbox-cover-workspace/iteration-1/background/shared-background-plate.png",
+  "output": ".agents/skills/toolbox-cover-workspace/iteration-2/background/shared-background-plain-corner.png",
+  "method": "Local corner cleanup: mirror a clean top-left 96px patch into the top-right with feathered inner edges. Original image_gen background retained unchanged.",
+  "image_gen_rerun": false
+}

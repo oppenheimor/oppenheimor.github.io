@@ -1,0 +1,41 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/public/tools/ego-lite/cover-full.webp",
+    "sha256": "c27162bd39eaf5142aea8c40016c88215c1bbca63dfec5a924364e89ef0dc116",
+    "width": 2880,
+    "height": 1620
+  },
+  "crop": null,
+  "background": {
+    "provenance": "deterministic-source-adaptive",
+    "color": {
+      "r": 237,
+      "g": 237,
+      "b": 237
+    },
+    "method": "opaque-corner-average"
+  },
+  "placement": {
+    "mode": "banner",
+    "width": 1200,
+    "height": 675,
+    "left": 0,
+    "top": 0,
+    "scale": 0.4166666666666667
+  },
+  "preview": {
+    "file": "original.webp",
+    "width": 2880,
+    "height": 1620,
+    "lossless": true,
+    "bytes": 322298
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 92,
+    "bytes": 15084
+  },
+  "warnings": []
+}

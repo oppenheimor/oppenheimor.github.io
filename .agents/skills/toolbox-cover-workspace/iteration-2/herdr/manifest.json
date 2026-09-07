@@ -1,0 +1,36 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/public/tools/herdr/cover-full.webp",
+    "sha256": "d466c664b82d9fc89467aa27281d0158f0ffc82b009601a0a797abdcf98c5649",
+    "width": 2742,
+    "height": 1182
+  },
+  "background": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/.agents/skills/toolbox-cover-workspace/iteration-2/background/shared-background-plain-corner.png",
+    "sha256": "99a9e52c82cbc08d9d00151bd08a55fb84f55376ece246dda4d5dbb02053188f",
+    "provenance": "image_gen background with local corner cleanup"
+  },
+  "placement": {
+    "mode": "screenshot",
+    "width": 2160,
+    "height": 931,
+    "left": 120,
+    "top": 210,
+    "scale": 0.787746170678337
+  },
+  "master": {
+    "file": "cover-full.webp",
+    "width": 2400,
+    "height": 1350,
+    "lossless": true,
+    "bytes": 800194
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 90,
+    "bytes": 42830
+  },
+  "warnings": []
+}

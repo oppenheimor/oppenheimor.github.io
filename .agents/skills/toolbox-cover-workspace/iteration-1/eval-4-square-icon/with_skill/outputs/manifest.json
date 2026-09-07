@@ -1,0 +1,38 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/.agents/skills/toolbox-cover-workspace/iteration-1/inputs/ego-icon-square.png",
+    "sha256": "170fb69a667d244cc5639958e002e5df43f371f9c5f6861392e2b27cbfcc9ca8",
+    "width": 720,
+    "height": 720
+  },
+  "background": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/.agents/skills/toolbox-cover-workspace/iteration-1/background/shared-background-plate.png",
+    "sha256": "a57d44097c0127ef924897d5913d0c06ed50486b71d65c3ce5a9ae64c49d6b74",
+    "provenance": "image_gen"
+  },
+  "placement": {
+    "mode": "icon",
+    "width": 720,
+    "height": 720,
+    "left": 840,
+    "top": 315,
+    "scale": 1
+  },
+  "master": {
+    "file": "cover-full.webp",
+    "width": 2400,
+    "height": 1350,
+    "lossless": true,
+    "bytes": 1003194
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 90,
+    "bytes": 12266
+  },
+  "warnings": [
+    "Source was not enlarged: less detail/visual occupancy than a larger source. Use a higher-resolution original if needed."
+  ]
+}

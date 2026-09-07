@@ -1,0 +1,90 @@
+<dialog class="coverLightbox" aria-label="封面大图预览">
+  <button class="closePreview" type="button" aria-label="关闭封面预览" autofocus>×</button>
+  <img class="previewImage" alt="" />
+  <p class="previewError" role="status" hidden>图片加载失败，请关闭后重试。</p>
+</dialog>
+
+<script>
+  import { previewSize } from '../lib/preview-size';
+
+  const dialog = document.querySelector<HTMLDialogElement>('.coverLightbox');
+  const image = dialog?.querySelector<HTMLImageElement>('.previewImage');
+  const error = dialog?.querySelector<HTMLElement>('.previewError');
+  let opener: HTMLButtonElement | null = null;
+  let previousOverflow = '';
+  if (dialog && image && error) {
+    const fitImage = () => {
+      if (!dialog.open || !image.naturalWidth) return;
+      const style = getComputedStyle(dialog);
+      const size = previewSize(
+        image.naturalWidth,
+        image.naturalHeight,
+        dialog.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+        dialog.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom),
+        window.devicePixelRatio,
+      );
+      image.style.width = `${size.width}px`;
+      image.style.height = `${size.height}px`;
+    };
+    image.addEventListener('load', () => {
+      if (!dialog.open) return;
+      fitImage();
+      image.hidden = false;
+    });
+    window.addEventListener('resize', fitImage, { passive: true });
+    // A monitor/DPR change may happen without a layout viewport resize.
+    const watchPixelRatio = () => {
+      const query = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+      query.addEventListener('change', () => { fitImage(); watchPixelRatio(); }, { once: true });
+    };
+    watchPixelRatio();
+
+    document.addEventListener('click', (event) => {
+      const target = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('button[data-cover-preview]') : null;
+      if (!target || dialog.open) return;
+      opener = target;
+      error.hidden = true;
+      image.hidden = true;
+      image.alt = target.dataset.coverName ? `${target.dataset.coverName} 封面` : '工具封面';
+      image.src = target.dataset.coverPreview ?? '';
+      previousOverflow = document.documentElement.style.overflow;
+      dialog.showModal();
+      document.documentElement.style.overflow = 'hidden';
+      if (image.complete && image.naturalWidth) {
+        fitImage();
+        image.hidden = false;
+      }
+    });
+    image.addEventListener('error', () => { image.hidden = true; error.hidden = false; });
+    dialog.querySelector('button')?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => {
+      document.documentElement.style.overflow = previousOverflow;
+      opener?.focus({ preventScroll: true });
+      opener = null;
+    });
+  }
+</script>
+
+<style>
+  .coverLightbox {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 70px 28px 28px;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+  }
+  .coverLightbox[open] { display: flex; align-items: center; justify-content: center; }
+  .coverLightbox::backdrop { background: oklch(0.1 0.02 255 / 0.94); }
+  .previewImage { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+  .previewImage[hidden], .previewError[hidden] { display: none; }
+  .closePreview { position: absolute; top: 16px; right: 20px; width: 44px; height: 44px; border: 1px solid var(--hairline); border-radius: 50%; background: var(--surface); color: var(--ink); font-size: 28px; line-height: 1; cursor: pointer; }
+  @media (max-width: 700px) { .coverLightbox { padding: 70px 12px 20px; } }
+</style>
