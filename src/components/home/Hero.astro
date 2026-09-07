@@ -1,0 +1,190 @@
+<section class="hero" aria-labelledby="hero-title">
+  <h1 id="hero-title">
+    <span class="lineMask"><span>ideas</span></span>
+    <span class="lineMask"><span>take</span></span>
+    <span class="lineMask"><span>root.</span></span>
+    <span class="illustration" aria-hidden="true">
+      <svg viewBox="0 0 240 250" role="presentation">
+        <ellipse class="orbit" cx="120" cy="145" rx="91" ry="35" transform="rotate(-18 120 145)" />
+        <circle class="seed" cx="120" cy="145" r="34" />
+        <path class="stem" d="M120 119c-2-38 15-67 48-84" />
+        <path class="leaf" d="M150 59c8-29 34-39 55-32-3 25-22 43-55 32Z" />
+        <path class="leaf leafLeft" d="M127 83c-23-24-48-21-64-7 13 23 37 30 64 7Z" />
+        <circle class="satellite" cx="36" cy="166" r="7" />
+      </svg>
+    </span>
+  </h1>
+  <div class="sub">
+    <span class="zh">个人数字花园</span>
+    <span class="en">ENGINEERING / PRODUCT / LIFE</span>
+  </div>
+  <a class="scrollHint" href="#garden">↓ 往下滑</a>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: flex;
+    min-height: 86vh;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  h1 {
+    position: relative;
+    margin: 0;
+    font-size: clamp(72px, 12vw, 140px);
+    font-weight: 700;
+    line-height: 0.94;
+    letter-spacing: -0.045em;
+  }
+
+  .lineMask {
+    display: block;
+    margin-bottom: -0.09em;
+    padding-bottom: 0.09em;
+    overflow: hidden;
+  }
+
+  .lineMask > span {
+    display: block;
+    animation: lift 1.5s var(--ease-out) forwards;
+    transform: translateY(112%);
+  }
+
+  .lineMask:nth-child(1) > span { animation-delay: 0.1s; }
+  .lineMask:nth-child(2) > span { animation-delay: 0.24s; }
+  .lineMask:nth-child(3) > span { animation-delay: 0.38s; }
+
+  .illustration {
+    position: absolute;
+    bottom: -0.44em;
+    left: 2.5em;
+    z-index: 1;
+    display: block;
+    width: min(30vw, 230px);
+    opacity: 0;
+    animation: illustrationIn 1.5s var(--ease-out) 0.5s forwards;
+    pointer-events: none;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 14px 20px oklch(0.2 0.006 75 / 0.09));
+  }
+
+  .orbit {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-dasharray: 3 8;
+  }
+
+  .seed {
+    fill: var(--highlight);
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+
+  .stem,
+  .leaf {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .leaf {
+    fill: var(--highlight-soft);
+  }
+
+  .leafLeft { fill: var(--canvas); }
+
+  .satellite {
+    fill: var(--ink);
+    animation: satellite 5.5s ease-in-out infinite;
+    transform-origin: 120px 145px;
+  }
+
+  .sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 20px;
+    margin-top: 40px;
+    opacity: 0;
+    animation: fadeUp 1.4s var(--ease-out) 1s forwards;
+    transform: translateY(18px);
+  }
+
+  .zh {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+  }
+
+  .en,
+  .scrollHint {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .en { letter-spacing: 0.14em; }
+
+  .scrollHint {
+    position: absolute;
+    bottom: 5vh;
+    left: 0;
+    opacity: 0;
+    letter-spacing: 0.3em;
+    text-decoration: none;
+    animation: fadeUp 1.4s var(--ease-out) 1.8s forwards;
+    transform: translateY(18px);
+  }
+
+  @keyframes lift { to { transform: translateY(0); } }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  @keyframes illustrationIn { to { opacity: 1; transform: translateY(-5%); } }
+  @keyframes satellite { 50% { transform: rotate(18deg) translateX(8px); } }
+
+  @media (max-height: 500px) and (min-width: 701px) {
+    .hero { min-height: 88svh; }
+    h1 { font-size: clamp(58px, 18vh, 74px); }
+    .illustration { width: 150px; }
+    .sub { margin-top: 20px; }
+    .scrollHint { display: none; }
+  }
+
+  @media (max-width: 700px) {
+    .hero { min-height: 74svh; }
+
+    h1 { font-size: clamp(58px, 19.5vw, 82px); }
+
+    .illustration {
+      bottom: -0.28em;
+      left: 2.48em;
+      width: min(42vw, 160px);
+    }
+
+    .sub {
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .zh { font-size: 16px; }
+
+    .en {
+      font-size: 10px;
+      line-height: 1.6;
+      letter-spacing: 0.09em;
+    }
+
+    .scrollHint {
+      bottom: 3vh;
+      font-size: 11px;
+    }
+  }
+</style>

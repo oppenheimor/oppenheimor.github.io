@@ -1,0 +1,539 @@
+<section id="garden" class="garden" aria-labelledby="garden-heading" data-reveal>
+  <span class="sectionNumber" aria-hidden="true"><span>0</span><span data-section-digit>1</span></span>
+  <h2 id="garden-heading" class="visuallyHidden">Oppenheimor 的数字花园</h2>
+
+  <div class="tabs" role="tablist" aria-label="内容分类">
+    <button id="tab-projects" class="tab isActive" type="button" role="tab" aria-selected="true" aria-controls="panel-projects" tabindex="0">项目</button>
+    <button id="tab-notes" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-notes" tabindex="-1">Notes</button>
+    <button id="tab-writing" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-writing" tabindex="-1">文章</button>
+    <button id="tab-about" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-about" tabindex="-1">关于我</button>
+    <button id="tab-life" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-life" tabindex="-1">生活</button>
+  </div>
+
+  <div id="panel-projects" class="panel panelProjects panelEnter" role="tabpanel" aria-labelledby="tab-projects">
+    <article class="projectHitbox">
+      <a class="projectCard" href="https://github.com/oppenheimor/oppenheimor.github.io" target="_blank" rel="noreferrer">
+        <span class="projectNumber" aria-hidden="true">01</span>
+        <div class="projectStage" aria-hidden="true">
+          <div class="window">
+            <span class="windowDot"></span><span class="windowDot"></span><span class="windowDot"></span>
+            <div class="miniGrid"></div>
+            <strong>ideas<br />take<br />root.</strong>
+            <span class="miniSeed"></span>
+          </div>
+        </div>
+        <div class="projectInfo">
+          <span class="eyebrow">DIGITAL GARDEN / 2026</span>
+          <h3>This Garden</h3>
+          <p>从一个 Hello World 开始，记录技术、产品和生活里正在生长的东西。</p>
+          <span class="go">查看源码 <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+    </article>
+    <p class="quietLine">下一件作品还在路上。这里不会用虚构案例填满版面。</p>
+  </div>
+
+  <div id="panel-notes" class="panel textPanel" role="tabpanel" aria-labelledby="tab-notes" hidden>
+    <p class="panelKicker">NOTES / 随手记录</p>
+    <div class="statement">
+      <strong>花园刚刚翻土。</strong>
+      <p>这里将收纳短笔记、过程记录和还没长成文章的想法。先保持空白，再慢慢种下真实内容。</p>
+    </div>
+    <div class="metaRow"><span>STATUS</span><span>SEEDLING</span><span>持续生长中</span></div>
+  </div>
+
+  <div id="panel-writing" class="panel writingPanel" role="tabpanel" aria-labelledby="tab-writing" hidden>
+    <a class="articleRow" href="#hello-world">
+      <time datetime="2026-09-07">2026.09.07</time>
+      <span><strong>Hello World</strong><small>第一篇还没写完，但网站已经先站起来了。</small></span>
+      <b aria-hidden="true">→</b>
+    </a>
+    <p id="hello-world" class="quietLine">文章系统将在下一阶段加入。这个入口暂时诚实地停在首页。</p>
+  </div>
+
+  <div id="panel-about" class="panel textPanel" role="tabpanel" aria-labelledby="tab-about" hidden>
+    <p class="panelKicker">OPPENHEIMOR / ABOUT</p>
+    <div class="statement">
+      <strong>一个在代码、产品与日常之间持续学习的人。</strong>
+      <p>这里是我的公开数字花园。完整经历和真实姓名会在准备好后补进来，现在先让作品与思考说话。</p>
+    </div>
+    <ul class="tags" aria-label="关注领域">
+      <li>ENGINEERING</li><li>PRODUCT</li><li>AI</li><li>LIFE</li>
+    </ul>
+  </div>
+
+  <div id="panel-life" class="panel textPanel" role="tabpanel" aria-labelledby="tab-life" hidden>
+    <p class="panelKicker">LIFE / 普通日子</p>
+    <div class="statement">
+      <strong>不是每件事都需要成为项目。</strong>
+      <p>以后会在这里放旅行、阅读、照片，以及那些值得记住却不必总结成方法论的瞬间。</p>
+    </div>
+    <div class="lifeMarks" aria-hidden="true"><span>读</span><span>走</span><span>看</span><span>想</span></div>
+  </div>
+</section>
+
+<script>
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+  const digit = document.querySelector<HTMLElement>('[data-section-digit]');
+
+  const selectTab = (selected: HTMLButtonElement) => {
+    tabs.forEach((tab) => {
+      const active = tab === selected;
+      tab.classList.toggle('isActive', active);
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+      const panel = document.getElementById(tab.getAttribute('aria-controls') ?? '');
+      if (panel) {
+        panel.hidden = !active;
+        panel.classList.toggle('panelEnter', active);
+      }
+    });
+    if (digit) digit.textContent = String(tabs.indexOf(selected) + 1);
+    selected.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  };
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectTab(tab));
+    tab.addEventListener('keydown', (event) => {
+      let next = index;
+      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      else if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = tabs.length - 1;
+      else return;
+      event.preventDefault();
+      tabs[next].focus();
+      selectTab(tabs[next]);
+    });
+  });
+</script>
+
+<style>
+  .garden {
+    position: relative;
+    padding: 12vh 0;
+  }
+
+  .visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sectionNumber {
+    position: absolute;
+    top: 5vh;
+    right: -0.05em;
+    z-index: -1;
+    display: flex;
+    color: transparent;
+    font-size: clamp(120px, 22vw, 220px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    -webkit-text-stroke: 1px oklch(0.2 0.006 75 / 0.1);
+    user-select: none;
+  }
+
+  .tabs {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 42px;
+    width: 100%;
+    margin-bottom: 48px;
+    padding: 0 0 16px;
+  }
+
+  .tab {
+    position: relative;
+    display: flex;
+    flex: none;
+    min-height: 1.16em;
+    align-items: flex-end;
+    padding: 0 0 10px;
+    border: 0;
+    background: transparent;
+    color: oklch(0.76 0.004 75);
+    cursor: pointer;
+    font-size: clamp(30px, 5.2vw, 48px);
+    font-weight: 700;
+    line-height: 0.96;
+    letter-spacing: -0.03em;
+    opacity: 0.76;
+    transition: color 0.6s var(--ease-out), opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+  }
+
+  .tab::after {
+    position: absolute;
+    bottom: 2px;
+    left: -2%;
+    z-index: -1;
+    width: 104%;
+    height: 0.32em;
+    background: var(--highlight);
+    content: "";
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.8s var(--ease-out);
+  }
+
+  .tab.isActive {
+    color: var(--ink);
+    opacity: 1;
+  }
+
+  .tab.isActive::after { transform: scaleX(1); }
+
+  .panel[hidden] { display: none; }
+
+  .panelEnter { animation: panelIn 0.9s var(--ease-out); }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panelProjects {
+    display: grid;
+    gap: 16px;
+  }
+
+  .projectCard {
+    position: relative;
+    display: grid;
+    min-height: 300px;
+    grid-template-columns: 1.15fr 1fr;
+    align-items: center;
+    gap: 36px;
+    padding: 22px 26px;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: 20px;
+    background: var(--canvas);
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.45s var(--ease-out), box-shadow 0.7s var(--ease-out), border-color 0.7s var(--ease-out);
+  }
+
+  .projectNumber {
+    position: absolute;
+    bottom: 18px;
+    left: 28px;
+    color: transparent;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    -webkit-text-stroke: 1px oklch(0.2 0.006 75 / 0.11);
+    transition: transform 0.9s var(--ease-out);
+  }
+
+  .projectStage,
+  .projectInfo { position: relative; z-index: 1; }
+
+  .window {
+    position: relative;
+    height: 202px;
+    overflow: hidden;
+    border: 1px solid oklch(0.88 0.006 75);
+    border-radius: 14px;
+    background: var(--highlight-soft);
+    box-shadow: 0 18px 35px oklch(0.2 0.006 75 / 0.08);
+    transform: rotate(-2deg);
+    transition: transform 0.7s var(--ease-out);
+  }
+
+  .windowDot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin: 12px 0 0 6px;
+    border-radius: 50%;
+    background: oklch(0.7 0.006 75);
+  }
+
+  .windowDot:first-child { margin-left: 13px; background: var(--highlight); }
+
+  .miniGrid {
+    position: absolute;
+    inset: 30px 0 0;
+    background-image:
+      linear-gradient(oklch(0.2 0.006 75 / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.2 0.006 75 / 0.06) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
+  .window strong {
+    position: absolute;
+    top: 52px;
+    left: 24px;
+    font-size: 38px;
+    line-height: 0.88;
+    letter-spacing: -0.06em;
+  }
+
+  .miniSeed {
+    position: absolute;
+    right: 34px;
+    bottom: 43px;
+    width: 35px;
+    height: 35px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--highlight);
+    box-shadow: 18px -18px 0 -12px var(--ink);
+  }
+
+  .eyebrow,
+  .panelKicker,
+  .metaRow {
+    color: var(--text-muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+
+  .projectInfo h3 {
+    margin: 14px 0 12px;
+    font-size: clamp(30px, 4vw, 40px);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+  }
+
+  .projectInfo p {
+    max-width: 31ch;
+    margin: 0 0 28px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  .go {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+
+  .go span {
+    display: inline-block;
+    margin-left: 6px;
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  .quietLine {
+    margin: 16px 4px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .textPanel {
+    min-height: 510px;
+    padding: 60px 0 20px;
+  }
+
+  .panelKicker {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 70px;
+    text-transform: uppercase;
+  }
+
+  .panelKicker::before {
+    width: 28px;
+    height: 1px;
+    background: var(--ink);
+    content: "";
+  }
+
+  .statement strong {
+    display: block;
+    max-width: 17ch;
+    font-size: clamp(36px, 6vw, 64px);
+    line-height: 1.06;
+    letter-spacing: -0.045em;
+  }
+
+  .statement p {
+    max-width: 48ch;
+    margin: 32px 0 0 auto;
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.9;
+  }
+
+  .metaRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-top: 90px;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 68px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tags li {
+    padding: 9px 13px;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  .writingPanel {
+    min-height: 510px;
+    padding-top: 38px;
+  }
+
+  .articleRow {
+    display: grid;
+    grid-template-columns: 110px 1fr 24px;
+    gap: 24px;
+    align-items: start;
+    padding: 32px 4px;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    text-decoration: none;
+    transition: padding 0.7s var(--ease-out);
+  }
+
+  .articleRow time {
+    color: var(--text-muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+  }
+
+  .articleRow strong {
+    display: block;
+    font-size: clamp(24px, 3.4vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+
+  .articleRow small {
+    display: block;
+    margin-top: 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.7;
+  }
+
+  .articleRow b { font-size: 22px; font-weight: 400; }
+
+  .lifeMarks {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 65px;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .lifeMarks span {
+    padding: 24px 0;
+    color: var(--text-muted);
+    text-align: center;
+    border-right: 1px solid var(--hairline);
+    font-size: 18px;
+  }
+
+  .lifeMarks span:last-child { border-right: 0; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tab:not(.isActive):hover { color: var(--text-secondary); opacity: 1; transform: translateY(-2px); }
+    .projectHitbox:hover .projectCard { border-color: oklch(0.86 0.006 75); box-shadow: 0 3px 6px oklch(0.2 0.006 75 / 0.04), 0 26px 48px -18px oklch(0.2 0.006 75 / 0.18); transform: translateY(-5px); }
+    .projectHitbox:hover .window { transform: rotate(0deg) scale(1.02); }
+    .projectHitbox:hover .projectNumber { transform: translateY(-6px); }
+    .projectHitbox:hover .go span { transform: translateX(7px); }
+    .articleRow:hover { padding-left: 20px; }
+  }
+
+  @media (max-width: 700px) {
+    .garden { padding: 8vh 0; }
+
+    .tabs {
+      width: auto;
+      margin: 0 -20px 32px;
+      padding: 0 20px 10px;
+      gap: 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      padding-bottom: 7px;
+      font-size: clamp(24px, 7.5vw, 32px);
+    }
+
+    .projectCard {
+      min-height: 0;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      padding: 18px 16px 24px;
+    }
+
+    .projectStage { height: clamp(190px, 55vw, 260px); }
+    .window { height: 100%; }
+
+    .projectInfo { padding: 0 6px 8px; }
+    .projectInfo h3 { margin-top: 12px; }
+    .projectInfo p { max-width: none; margin-bottom: 22px; }
+
+    .projectNumber {
+      bottom: 16px;
+      left: 18px;
+      font-size: 34px;
+    }
+
+    .textPanel,
+    .writingPanel {
+      min-height: 470px;
+      padding-top: 32px;
+    }
+
+    .panelKicker { margin-bottom: 52px; }
+
+    .statement strong { font-size: clamp(34px, 11vw, 46px); }
+
+    .statement p {
+      margin-top: 28px;
+      font-size: 14px;
+    }
+
+    .metaRow {
+      grid-template-columns: 1fr;
+      gap: 9px;
+      margin-top: 65px;
+    }
+
+    .articleRow {
+      grid-template-columns: 1fr 20px;
+      gap: 14px;
+      padding: 26px 0;
+    }
+
+    .articleRow time { grid-column: 1 / -1; }
+    .lifeMarks { margin-top: 48px; }
+  }
+</style>

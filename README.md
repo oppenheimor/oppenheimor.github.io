@@ -1,6 +1,14 @@
 # Oppenheimor
 
-Personal digital garden powered by [Astro](https://astro.build/) and deployed to GitHub Pages.
+Oppenheimor’s personal digital garden, built with Astro and deployed to GitHub Pages.
+
+The homepage currently includes:
+
+- A responsive personal introduction
+- Project, note, writing, about and life panels
+- Keyboard-accessible tab navigation
+- GitHub and website destinations
+- Reduced-motion support
 
 ## Development
 
@@ -9,9 +17,12 @@ npm install
 npm run dev
 ```
 
-## Build
+## Quality check
 
 ```sh
-npm run build
-npm run preview
+npm run check
 ```
+
+## Deployment
+
+Pushing to `main` runs `.github/workflows/deploy.yml` and publishes the static build to [oppenheimor.github.io](https://oppenheimor.github.io).

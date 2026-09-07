@@ -1,0 +1,74 @@
+<header class="header">
+  <span class="identity"><span class="dot" aria-hidden="true"></span>OPPENHEIMOR®</span>
+  <a href="https://github.com/oppenheimor" target="_blank" rel="noreferrer">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3Z" />
+    </svg>
+    github.com/oppenheimor
+  </a>
+</header>
+
+<style>
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 34px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+  }
+
+  .identity {
+    white-space: nowrap;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 10px;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    background: var(--highlight);
+    animation: pulse 2.6s ease-in-out infinite;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.5s var(--ease-out);
+  }
+
+  a:hover { color: var(--ink); }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+
+  @keyframes pulse {
+    50% { transform: scale(0.7); opacity: 0.55; }
+  }
+
+  @media (max-width: 700px) {
+    .header {
+      padding-top: 22px;
+      font-size: 10px;
+      letter-spacing: 0.07em;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      margin-right: 7px;
+    }
+
+    a { gap: 5px; }
+    svg { width: 12px; height: 12px; }
+  }
+</style>
