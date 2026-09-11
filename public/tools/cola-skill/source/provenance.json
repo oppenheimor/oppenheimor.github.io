@@ -1,0 +1,10 @@
+{
+  "url": "https://colaos.ai/skills/zh/",
+  "capturedAt": "2026-09-08",
+  "browser": "ego-browser",
+  "taskSpaceId": 27,
+  "viewport": {"width": 1440, "height": 900, "deviceScaleFactor": 2},
+  "selectedCapture": "official-directory-final.png",
+  "captureRegionCssPixels": {"x": 56, "y": 62, "width": 1312, "height": 738},
+  "description": "Unmodified official directory: title, original illustrations and copy, search and category controls, and first four complete skill cards. Deterministic screenshot normalization; no AI image generation."
+}

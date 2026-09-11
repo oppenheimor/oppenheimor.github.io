@@ -1,0 +1,45 @@
+{
+  "provenance": "Deterministic composition of unchanged official website text-element screenshots and official editor demonstration. No AI-generated content.",
+  "url": "https://colamd.com/",
+  "textSources": [
+    {
+      "path": "public/tools/colamd/source-v3/title.png",
+      "sha256": "dbb7dcbea0adef35df9bc1212a56618ea59cd4ee75fa3526d98dcae479ef9772",
+      "left": 48,
+      "top": 108,
+      "width": 370,
+      "height": 194
+    },
+    {
+      "path": "public/tools/colamd/source-v3/subtitle.png",
+      "sha256": "8c45d724eb469fe080d0623880e677190d39cb0192ded9a9fab8168f9e945122",
+      "left": 48,
+      "top": 330,
+      "width": 370,
+      "height": 57
+    },
+    {
+      "path": "public/tools/colamd/source-v3/description.png",
+      "sha256": "14344cfdbb552306cb5c2a9e6cba833ef373d307cae55d83e0242ded2b97acbc",
+      "left": 48,
+      "top": 405,
+      "width": 370,
+      "height": 82
+    }
+  ],
+  "editorSource": "../source-v2/official-editor-demo.png",
+  "thumbnail": {
+    "width": 1200,
+    "height": 675,
+    "quality": 92
+  },
+  "preview": {
+    "file": "original.webp",
+    "width": 1110,
+    "height": 970,
+    "lossless": true,
+    "reusedFrom": "../candidate-02/original.webp"
+  },
+  "crop": null,
+  "upscaled": false
+}

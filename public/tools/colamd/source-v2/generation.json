@@ -1,0 +1,9 @@
+{
+  "tool": "image_gen",
+  "prompt": "Create a 16:9 editorial background plate, 1536x864, for a cover about ColaMD's core effect: an AI agent's ongoing changes to a Markdown file immediately become a readable, typeset document. This is ONLY the supporting backdrop; a real official editor screenshot will be composited unchanged over the RIGHT 62 percent afterwards. Keep x=36% through 98%, y=5% through 95% an entirely plain warm ivory #f5f1eb field. In the LEFT 30 percent, create a restrained visual metaphor for real-time synchronization: two synchronized terracotta-orange pulse traces, one composed of small discrete ink-like strokes and the other flowing smoothly, moving from left towards the future screenshot. Their matching rhythms make the same ongoing change visually apparent. A quiet editorial, flat print-graphic treatment with warm charcoal and terracotta #c84b2b; generous negative space and precisely controlled composition. Visually communicate live writing flowing into calm readable form. No text, letters, numbers, logos, app icons, UI, fake window, document card, buttons, robots, sparkle, badges, ribbons, folds, page curls, corner tags, engineering grid, 3D, gradients, glow, shadows or watermarks. Background remains subordinate to the genuine screenshot.",
+  "output": "generated-sync-background.png",
+  "sourcePage": "https://colamd.com/",
+  "screenshot": "official-editor-demo.png",
+  "screenshotProvenance": "Unmodified official website .editor-window at 1440x1000 viewport, deviceScaleFactor 2, zh-CN. This is the website's static product demonstration, not a recorded live sync session.",
+  "usage": "Generated background only; original product text and UI retained from screenshot."
+}

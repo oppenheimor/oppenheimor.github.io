@@ -1,0 +1,6 @@
+{
+  "tool": "image_gen",
+  "prompt": "Generate a minimal flat editorial background plate for a Markdown editor cover, landscape 16:9. Warm uniform ivory #f5f1eb. On the leftmost 28% only, show six short staggered horizontal terracotta and charcoal ink strokes in three rows, progressively aligning into neatly spaced horizontal reading lines as they move rightward. This is a restrained abstract metaphor of ongoing source-text edits becoming readable typesetting, NOT an audio signal. The strokes should be large enough to recognize at thumbnail size, visually simple, calm, precise. A tiny warm terracotta connecting line can lead toward the right. The rightmost 68% and all corners must be completely empty plain ivory; the real product screenshot will be added there later. Hard requirements: flat clean graphic treatment, no paper texture, no paint smears, no sound waves, no pulse waveform, no sinusoids, no circles, no perspective, no ribbons, no cards, no folded paper, no interface, no text, no letters, no symbols, no icons, no logo, no badge, no shadows, no gradients, no grid. Supporting background only.",
+  "output": "generated-writing-background.png",
+  "usage": "Selected generated background; screenshot composited deterministically without redrawing UI."
+}

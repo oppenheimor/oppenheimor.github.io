@@ -29,6 +29,7 @@ Use the native Helvetica Neue and system Chinese sans stack. Display text is hea
 ## Layout
 
 - Main column: `820px` maximum with `32px` desktop gutters.
+- Toolbox routes expand to `1100px`; weekly routes use `1040px` for the archive and `1080px` for the reader, where a sticky `336px` cover column sits beside a `70ch` reading column.
 - Mobile gutters: `20px`.
 - Hero: about `86vh` desktop and `74svh` mobile.
 - Content sections: `12vh` vertical padding desktop, `8vh` mobile.
@@ -39,11 +40,14 @@ Use the native Helvetica Neue and system Chinese sans stack. Display text is hea
 - Header: compact identity and GitHub destination.
 - Hero: three-line statement with an original seed-orbit illustration.
 - Progress rail: fixed desktop-only vertical reading indicator.
-- Garden tabs: horizontally scrollable categories with a cobalt active underline. The rail becomes sticky within the garden section, keeps breathing room above the labels, and uses a full-viewport blue-black scrim that fully masks content at the top before fading softly below the rail.
+- Garden tabs: horizontally scrollable categories (项目, 文章, 周刊, 工具箱, 关于我) with a cobalt active underline. The rail becomes sticky within the garden section, keeps breathing room above the labels, and uses a full-viewport blue-black scrim that fully masks content at the top before fading softly below the rail.
 - Content panels: honest Oppenheimor content, panel transition, cards and text lists.
 - Elsewhere: ruled contact rows with icon, label, value and directional arrow.
 - Toolbox directory: name-first deep-blue index cards, optional covers, cobalt starred corners, and visibly struck retired tools.
 - Tool file: two overlapping paper sheets for “使用痕迹” and “工具介绍”; the traces sheet always opens first.
+- Weekly tab: the third garden panel. A masthead carries the publication name, the weekly cadence and the issue count; underneath, the newest issue opens with its 第 01 期 label, publication date, a 3:2 cover, the issue title and its lead paragraph, then ruled rows for the previous issues and a 查看全部周刊 link to the archive.
+- Weekly archive: a year-grouped ledger of ruled rows — outlined issue number, persistent cover, date, tags, title and a two-line summary.
+- Weekly reader: a wide issue header, a sticky cover column with a 切换期数 trigger and neighbouring issues, and a `70ch` Markdown column. The issue dialog is a centred panel on desktop and a bottom sheet on mobile, opened from the header trigger or the mobile floating button.
 
 ## Cursor
 

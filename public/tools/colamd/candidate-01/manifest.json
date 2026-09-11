@@ -1,0 +1,41 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/public/tools/colamd/source/og-image.png",
+    "sha256": "c91c5eb84cd2d633ff501d24d1cd4534ea5656227aa5966bab3aa827047bc26b",
+    "width": 1200,
+    "height": 630
+  },
+  "crop": null,
+  "background": {
+    "provenance": "deterministic-source-adaptive",
+    "color": {
+      "r": 245,
+      "g": 241,
+      "b": 235
+    },
+    "method": "opaque-corner-average"
+  },
+  "placement": {
+    "mode": "banner",
+    "width": 1200,
+    "height": 630,
+    "left": 0,
+    "top": 23,
+    "scale": 1
+  },
+  "preview": {
+    "file": "original.webp",
+    "width": 1200,
+    "height": 630,
+    "lossless": true,
+    "bytes": 20418
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 92,
+    "bytes": 29262
+  },
+  "warnings": []
+}

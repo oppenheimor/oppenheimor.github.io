@@ -1,9 +1,24 @@
-<header class="toolsHeader">
+---
+interface Props {
+  section: 'weekly' | 'tools';
+}
+
+const { section } = Astro.props;
+
+const links = [
+  { href: '/weekly', label: '周刊', key: 'weekly' },
+  { href: '/tools', label: '工具箱', key: 'tools' },
+];
+---
+
+<header class="subHeader">
   <a class="identity" href="/" aria-label="返回 Oppenheimor 首页" data-home-return>
     <span class="dot" aria-hidden="true"></span>OPPENHEIMOR®
   </a>
-  <nav aria-label="工具箱导航">
-    <a href="/tools">工具箱</a>
+  <nav aria-label="站点导航">
+    {links.map((link) => (
+      <a href={link.href} aria-current={section === link.key ? 'page' : undefined} class:list={[{ isCurrent: section === link.key }]}>{link.label}</a>
+    ))}
     <a href="https://github.com/oppenheimor" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
   </nav>
 </header>
@@ -27,7 +42,7 @@
 </script>
 
 <style>
-  .toolsHeader {
+  .subHeader {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -60,9 +75,10 @@
 
   nav { display: flex; gap: 22px; }
   a:hover { color: var(--ink); }
+  nav a.isCurrent { color: var(--ink); }
 
   @media (max-width: 700px) {
-    .toolsHeader {
+    .subHeader {
       padding-top: 22px;
       font-size: 10px;
       letter-spacing: 0.07em;

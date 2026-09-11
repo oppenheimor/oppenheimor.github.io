@@ -1,0 +1,36 @@
+{
+  "source": {
+    "path": "public/tools/colamd/source-v2/official-editor-demo.png",
+    "sha256": "1008140503751ef56a624667478fffa8911d287d9fbc4c74a01f6cb88c8e9ec2",
+    "width": 1110,
+    "height": 970,
+    "url": "https://colamd.com/",
+    "selector": ".editor-window",
+    "kind": "official website static editor demonstration"
+  },
+  "background": {
+    "path": "public/tools/colamd/source-v2/generated-writing-background.png",
+    "sha256": "16bea4612d29da969b21933460f465044f744f3b360da305fc80e49ad832edc9",
+    "provenance": "image_gen"
+  },
+  "crop": null,
+  "placement": {
+    "left": 475,
+    "top": 38,
+    "width": 685,
+    "height": 599,
+    "scale": 0.6175257731958763
+  },
+  "thumbnail": {
+    "width": 1200,
+    "height": 675,
+    "quality": 92
+  },
+  "preview": {
+    "file": "original.webp",
+    "width": 1110,
+    "height": 970,
+    "lossless": true
+  },
+  "warnings": []
+}

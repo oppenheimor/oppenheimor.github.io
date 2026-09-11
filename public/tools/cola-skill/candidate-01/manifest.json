@@ -1,0 +1,41 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/public/tools/cola-skill/source/official-directory-final.png",
+    "sha256": "29cbae8c011b3b8d28d95e00da45c97d6b06f951bd17d28955037d0b2a01add8",
+    "width": 2624,
+    "height": 1476
+  },
+  "crop": null,
+  "background": {
+    "provenance": "deterministic-source-adaptive",
+    "color": {
+      "r": 254,
+      "g": 251,
+      "b": 248
+    },
+    "method": "opaque-corner-average"
+  },
+  "placement": {
+    "mode": "screenshot",
+    "width": 1200,
+    "height": 675,
+    "left": 0,
+    "top": 0,
+    "scale": 0.4573170731707317
+  },
+  "preview": {
+    "file": "original.webp",
+    "width": 2624,
+    "height": 1476,
+    "lossless": true,
+    "bytes": 694454
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 92,
+    "bytes": 74468
+  },
+  "warnings": []
+}

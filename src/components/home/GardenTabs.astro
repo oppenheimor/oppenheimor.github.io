@@ -1,8 +1,11 @@
 ---
 import { getCollection } from 'astro:content';
 import { sortTools, toolPath } from '../../lib/tools';
+import { issueDate, issueLabel, sortWeekly, weeklyPath } from '../../lib/weekly';
 
 const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.published)).filter((tool) => !tool.data.retired).slice(0, 4);
+const weeklyIssues = sortWeekly(await getCollection('weekly', ({ data }) => data.published));
+const [latestIssue, ...backIssues] = weeklyIssues;
 ---
 
 <section id="garden" class="garden" aria-labelledby="garden-heading" data-reveal>
@@ -13,11 +16,10 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
   <div class="tabsDock" data-tabs-dock>
     <div class="tabs" role="tablist" aria-label="内容分类">
       <button id="tab-projects" class="tab isActive" type="button" role="tab" aria-selected="true" aria-controls="panel-projects" tabindex="0">项目</button>
-      <button id="tab-tools" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-tools" tabindex="-1">工具箱</button>
-      <button id="tab-notes" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-notes" tabindex="-1">Notes</button>
       <button id="tab-writing" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-writing" tabindex="-1">文章</button>
+      <button id="tab-weekly" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-weekly" tabindex="-1">周刊</button>
+      <button id="tab-tools" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-tools" tabindex="-1">工具箱</button>
       <button id="tab-about" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-about" tabindex="-1">关于我</button>
-      <button id="tab-life" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-life" tabindex="-1">生活</button>
     </div>
   </div>
 
@@ -49,7 +51,7 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
       <div class="homeToolDesk">
         {toolPreview.map((tool) => (
           <article class:list={['homeToolFile', { textOnly: !tool.data.cover }]}>
-            {tool.data.cover && <span class="fileCover" aria-hidden="true"><img src={tool.data.cover} alt="" loading="lazy" /></span>}
+            {tool.data.cover && <button class="fileCover" type="button" data-cover-preview={tool.data.coverFull ?? tool.data.cover} data-cover-name={tool.data.name} aria-label={`放大 ${tool.data.name} 封面`}><img src={tool.data.cover} alt="" loading="lazy" /></button>}
             {!tool.data.cover && <span class="typeCover" aria-hidden="true">/</span>}
             <a class="fileCaption" href={toolPath(tool)}>
               <strong>{tool.data.name}</strong>
@@ -68,16 +70,7 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
         <strong>工具已经记下，只是还没有公开摆上桌面。</strong>
       </div>
     )}
-    <a class="toolboxLink" href="/tools">打开工具箱 <span aria-hidden="true">→</span></a>
-  </div>
-
-  <div id="panel-notes" class="panel textPanel" role="tabpanel" aria-labelledby="tab-notes" hidden>
-    <p class="panelKicker">NOTES / 随手记录</p>
-    <div class="statement">
-      <strong>花园刚刚翻土。</strong>
-      <p>这里将收纳短笔记、过程记录和还没长成文章的想法。先保持空白，再慢慢种下真实内容。</p>
-    </div>
-    <div class="metaRow"><span>STATUS</span><span>SEEDLING</span><span>持续生长中</span></div>
+    <a class="panelLink" href="/tools">打开工具箱 <span aria-hidden="true">→</span></a>
   </div>
 
   <div id="panel-writing" class="panel writingPanel" role="tabpanel" aria-labelledby="tab-writing" hidden>
@@ -89,6 +82,55 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
     <p id="hello-world" class="quietLine">文章系统将在下一阶段加入。这个入口暂时诚实地停在首页。</p>
   </div>
 
+  <div id="panel-weekly" class="panel weeklyPanel" role="tabpanel" aria-labelledby="tab-weekly" hidden>
+    <div class="masthead">
+      <span class="mastheadName">周刊 / Weekly</span>
+      {weeklyIssues.length > 0 && <span class="mastheadMeta">每周一更新 · 已出 {String(weeklyIssues.length).padStart(2, '0')} 期</span>}
+    </div>
+
+    {latestIssue ? (
+      <>
+        <a class="issueFeature" href={weeklyPath(latestIssue)}>
+          <span class="featureCover"><img src={latestIssue.data.cover} alt="" loading="lazy" /></span>
+          <span class="featureInfo">
+            <span class="featureMeta">
+              <b>{issueLabel(latestIssue.data.vol)}</b>
+              <time datetime={latestIssue.data.date.toISOString().slice(0, 10)}>{issueDate(latestIssue.data.date)}</time>
+              <em>最新一期</em>
+            </span>
+            <strong>{latestIssue.data.title}</strong>
+            <span class="featureLead">{latestIssue.data.summary}</span>
+            <span class="featureGo">读这一期 <span aria-hidden="true">→</span></span>
+          </span>
+        </a>
+
+        {backIssues.length > 0 && (
+          <div class="backIssues">
+            <p class="backLabel">往期</p>
+            <ul class="backList">
+              {backIssues.map((issue) => (
+                <li>
+                  <a href={weeklyPath(issue)}>
+                    <b>{issueLabel(issue.data.vol)}</b>
+                    <time datetime={issue.data.date.toISOString().slice(0, 10)}>{issueDate(issue.data.date)}</time>
+                    <strong>{issue.data.title}</strong>
+                    <span aria-hidden="true">→</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </>
+    ) : (
+      <div class="statement compactStatement">
+        <strong>周刊还没到第一期。</strong>
+      </div>
+    )}
+
+    <a class="panelLink" href="/weekly">查看全部周刊 <span aria-hidden="true">→</span></a>
+  </div>
+
   <div id="panel-about" class="panel textPanel" role="tabpanel" aria-labelledby="tab-about" hidden>
     <p class="panelKicker">OPPENHEIMOR / ABOUT</p>
     <div class="statement">
@@ -98,15 +140,6 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
     <ul class="tags" aria-label="关注领域">
       <li>ENGINEERING</li><li>PRODUCT</li><li>AI</li><li>LIFE</li>
     </ul>
-  </div>
-
-  <div id="panel-life" class="panel textPanel" role="tabpanel" aria-labelledby="tab-life" hidden>
-    <p class="panelKicker">LIFE / 普通日子</p>
-    <div class="statement">
-      <strong>不是每件事都需要成为项目。</strong>
-      <p>以后会在这里放旅行、阅读、照片，以及那些值得记住却不必总结成方法论的瞬间。</p>
-    </div>
-    <div class="lifeMarks" aria-hidden="true"><span>读</span><span>走</span><span>看</span><span>想</span></div>
   </div>
 </section>
 
@@ -389,8 +422,7 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
   }
 
   .eyebrow,
-  .panelKicker,
-  .metaRow {
+  .panelKicker {
     color: var(--text-muted);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11px;
@@ -546,12 +578,11 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
   .typeVariant .textOnly .fileCaption { grid-row: auto; align-self: center; }
   .typeVariant .textOnly .fileCaption strong { font-size: clamp(38px, 5vw, 58px); }
   .typeVariant .homeToolFile:focus-visible { outline-offset: 6px; }
-  .typeVariant .homeToolFile:focus-visible .fileCaption strong::after { transform: scaleX(1); }
   .typeVariant .homeToolFile:focus-visible .fileCover { transform: translateY(-31px) rotate(0); }
 
   @media (hover: hover) and (pointer: fine) {
     .typeVariant .homeToolFile:hover .fileCaption { transform: none; }
-    .typeVariant .fileCaption:hover strong::after { transform: scaleX(1); }
+    .typeVariant .fileCaption strong:hover::after { transform: scaleX(1); }
   }
 
   @media (max-width: 700px) {
@@ -678,17 +709,17 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
   }
   .trayVariant a.fileCaption { position: static; color: inherit; text-decoration: none; transform: none; }
   .trayVariant a.fileCaption::before { position: absolute; inset: 0; content: ''; }
-  .trayVariant a.fileCaption strong { position: relative; }
+  .trayVariant a.fileCaption strong { position: relative; z-index: 1; isolation: isolate; }
+  .trayVariant button.fileCover { position: relative; z-index: 2; padding: 0; border: 0; }
   .trayVariant a.fileCaption:focus-visible { outline: none; }
   .trayVariant .homeToolFile:has(a.fileCaption:focus-visible) { outline: 2px solid var(--ink); outline-offset: 6px; }
   .trayVariant .homeToolFile:focus-within::before,
   .trayVariant .homeToolFile:focus-within::after { border-color: var(--highlight); }
-  .trayVariant .fileCaption:focus-visible strong::after { transform: scaleX(1); }
   .trayVariant .homeToolFile .fileCover:focus-visible { transform: translateY(-5px) rotate(-4deg); }
 
   .compactStatement strong { max-width: 18ch; font-size: clamp(31px, 5vw, 50px); }
 
-  .toolboxLink {
+  .panelLink {
     position: relative;
     isolation: isolate;
     display: inline-flex;
@@ -705,7 +736,7 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
     transition: color 0.45s var(--ease-out), transform 0.45s var(--ease-out);
   }
 
-  .toolboxLink::after {
+  .panelLink::after {
     position: absolute;
     right: -4px;
     bottom: 0.08em;
@@ -720,14 +751,14 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
     transition: opacity 0.45s var(--ease-out), transform 0.55s var(--ease-out);
   }
 
-  .toolboxLink span {
+  .panelLink span {
     opacity: 0.72;
     transition: opacity 0.45s var(--ease-out), transform 0.5s var(--ease-out);
   }
 
-  .toolboxLink:focus-visible { color: var(--ink); transform: translateY(-2px); }
-  .toolboxLink:focus-visible::after { opacity: 0.9; transform: rotate(0) scaleX(1.03); }
-  .toolboxLink:focus-visible span { opacity: 1; transform: translateX(7px); }
+  .panelLink:focus-visible { color: var(--ink); transform: translateY(-2px); }
+  .panelLink:focus-visible::after { opacity: 0.9; transform: rotate(0) scaleX(1.03); }
+  .panelLink:focus-visible span { opacity: 1; transform: translateX(7px); }
 
   .panelKicker {
     display: flex;
@@ -758,15 +789,6 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
     color: var(--text-secondary);
     font-size: 16px;
     line-height: 1.9;
-  }
-
-  .metaRow {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-    margin-top: 90px;
-    padding-top: 20px;
-    border-top: 1px solid var(--hairline);
   }
 
   .tags {
@@ -829,23 +851,198 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
 
   .articleRow b { font-size: 22px; font-weight: 400; }
 
-  .lifeMarks {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    margin-top: 65px;
-    border-top: 1px solid var(--hairline);
+  .weeklyPanel {
+    padding-top: 38px;
+  }
+
+  .masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px 28px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--hairline);
-  }
-
-  .lifeMarks span {
-    padding: 24px 0;
     color: var(--text-muted);
-    text-align: center;
-    border-right: 1px solid var(--hairline);
-    font-size: 18px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
   }
 
-  .lifeMarks span:last-child { border-right: 0; }
+  .mastheadName {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--text-muted);
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+  }
+
+  .mastheadName::before {
+    width: 28px;
+    height: 1px;
+    background: var(--ink);
+    content: '';
+  }
+
+  .mastheadMeta { color: var(--signal); letter-spacing: 0.14em; }
+
+  .issueFeature {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    align-items: center;
+    gap: 34px;
+    padding: 34px 0 34px;
+    border-bottom: 1px solid var(--hairline);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .featureCover {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    aspect-ratio: 3 / 2;
+    transition: border-color 0.5s var(--ease-out);
+  }
+
+  .featureCover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1s var(--ease-out);
+  }
+
+  .featureInfo { display: block; min-width: 0; }
+
+  .featureMeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 12px;
+    color: var(--text-muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+
+  .featureMeta b {
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .featureMeta em {
+    padding: 3px 8px;
+    background: var(--highlight-soft);
+    color: var(--signal);
+    font-style: normal;
+    letter-spacing: 0.14em;
+  }
+
+  .featureInfo strong {
+    position: relative;
+    isolation: isolate;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 16px;
+    font-size: clamp(30px, 4vw, 42px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+
+  .featureInfo strong::after {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    left: -3px;
+    z-index: -1;
+    height: 0.2em;
+    background: var(--highlight);
+    content: '';
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  .featureLead {
+    display: block;
+    max-width: 34ch;
+    margin-top: 14px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .featureGo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+
+  .featureGo span { display: inline-block; transition: transform 0.5s var(--ease-out); }
+
+  .backLabel {
+    margin: 0 0 20px;
+    color: var(--text-muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+  }
+
+  .backIssues { padding: 30px 0 0; }
+
+  .backList { display: grid; margin: 0; padding: 0; list-style: none; }
+
+  .backList a {
+    display: grid;
+    grid-template-columns: 84px 92px minmax(0, 1fr) 18px;
+    align-items: baseline;
+    gap: 18px;
+    padding: 16px 4px;
+    border-top: 1px solid var(--hairline);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .backList li:last-child a { border-bottom: 1px solid var(--hairline); }
+
+  .backList b {
+    color: var(--signal);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+
+  .backList time {
+    color: var(--text-muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+
+  .backList strong {
+    color: var(--text-secondary);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    transition: color 0.4s var(--ease-out);
+  }
+
+  .backList a span {
+    color: var(--text-muted);
+    font-size: 15px;
+    transition: transform 0.5s var(--ease-out), color 0.4s var(--ease-out);
+  }
 
   @media (hover: hover) and (pointer: fine) {
     .tab:not(.isActive):hover { color: var(--text-secondary); opacity: 1; transform: translateY(-2px); }
@@ -854,10 +1051,16 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
     .projectHitbox:hover .projectNumber { transform: translateY(-6px); }
     .projectHitbox:hover .go span { transform: translateX(7px); }
     .articleRow:hover { padding-left: 20px; }
+    .issueFeature:hover .featureCover { border-color: oklch(0.48 0.11 250); }
+    .issueFeature:hover .featureCover img { transform: scale(1.04); }
+    .issueFeature:hover .featureInfo strong::after { transform: scaleX(1); }
+    .issueFeature:hover .featureGo span { transform: translateX(7px); }
+    .backList a:hover strong { color: var(--ink); }
+    .backList a:hover span { color: var(--ink); transform: translateX(5px); }
     .homeToolFile:hover .fileCaption { transform: translateY(-2px); }
-    .toolboxLink:hover { color: var(--ink); transform: translateY(-2px); }
-    .toolboxLink:hover::after { opacity: 0.9; transform: rotate(0) scaleX(1.03); }
-    .toolboxLink:hover span { opacity: 1; transform: translateX(7px); }
+    .panelLink:hover { color: var(--ink); transform: translateY(-2px); }
+    .panelLink:hover::after { opacity: 0.9; transform: rotate(0) scaleX(1.03); }
+    .panelLink:hover span { opacity: 1; transform: translateX(7px); }
   }
 
   @media (max-width: 700px) {
@@ -929,12 +1132,6 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
       font-size: 14px;
     }
 
-    .metaRow {
-      grid-template-columns: 1fr;
-      gap: 9px;
-      margin-top: 65px;
-    }
-
     .articleRow {
       grid-template-columns: 1fr 20px;
       gap: 14px;
@@ -942,6 +1139,27 @@ const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.pu
     }
 
     .articleRow time { grid-column: 1 / -1; }
-    .lifeMarks { margin-top: 48px; }
+
+    .issueFeature {
+      grid-template-columns: 116px minmax(0, 1fr);
+      gap: 18px;
+      padding: 24px 0;
+    }
+
+    .featureMeta b { font-size: 13px; }
+    .featureInfo strong { margin-top: 12px; font-size: clamp(26px, 8vw, 34px); }
+    .featureLead { margin-top: 12px; font-size: 13px; }
+    .featureGo { margin-top: 16px; }
+
+    .backLabel { margin-bottom: 16px; }
+
+    .backList a {
+      grid-template-columns: 76px minmax(0, 1fr) 16px;
+      gap: 10px;
+      padding: 14px 0;
+    }
+
+    .backList time { display: none; }
+    .backList strong { font-size: 15px; }
   }
 </style>

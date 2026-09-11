@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import SiteBackdrop from '../../components/home/SiteBackdrop.astro';
-import ToolsHeader from '../../components/tools/ToolsHeader.astro';
+import SubHeader from '../../components/SubHeader.astro';
 import { sortTools, toolPath } from '../../lib/tools';
 import '../../styles/global.css';
 
@@ -24,7 +24,7 @@ const year = new Date().getFullYear();
   <body>
     <SiteBackdrop />
     <div class="site-column toolsColumn">
-      <ToolsHeader />
+      <SubHeader section="tools" />
       <main>
         <header class="toolboxHero">
           <div class="heroTitle">
@@ -52,16 +52,20 @@ const year = new Date().getFullYear();
                   data-tool-item
                   data-search={[tool.data.name, ...tool.data.tags].join(' ').toLocaleLowerCase('zh-CN')}
                 >
-                  <a class="toolMain" href={toolPath(tool)}>
+                  <div class="toolMain">
                     <span class="toolNumber" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                    <span class="toolName">
+                    <a class="toolName" href={toolPath(tool)}>
                       <strong>{tool.data.name}</strong>
                       {tool.data.retired && <small>已划掉</small>}
-                    </span>
-                    <span class:list={['toolVisual', { typeOnly: !tool.data.cover }]} aria-hidden="true">
-                      {tool.data.cover ? <img src={tool.data.cover} alt="" loading="lazy" /> : <b>/</b>}
-                    </span>
-                  </a>
+                    </a>
+                    {tool.data.cover ? (
+                      <button class="toolVisual" type="button" data-cover-preview={tool.data.coverFull ?? tool.data.cover} data-cover-name={tool.data.name} aria-label={`放大 ${tool.data.name} 封面`}>
+                        <img src={tool.data.cover} alt="" loading="lazy" />
+                      </button>
+                    ) : (
+                      <span class="toolVisual typeOnly" aria-hidden="true"><b>/</b></span>
+                    )}
+                  </div>
                   {tool.data.starred && (
                     <svg class="toolStar" viewBox="0 0 32 32" role="img" aria-label="已星标">
                       <path d="M17 3 20.5 11.5 30 13 23 19.5 24 29 15.5 24.5 6 28 8 18.5 2 11 12 10Z" />
@@ -225,14 +229,34 @@ const year = new Date().getFullYear();
     font-size: 9px;
     letter-spacing: 0.12em;
   }
-  .toolName { min-width: 0; grid-column: 2; grid-row: 2; }
+  .toolName { min-width: 0; grid-column: 2; grid-row: 2; text-decoration: none; }
+  .toolName::after { position: absolute; inset: 0; content: ''; }
+  .toolName:focus-visible::after { outline: 2px solid var(--signal); outline-offset: 5px; }
   .toolName strong {
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
     display: block;
+    width: fit-content;
+    max-width: 100%;
     font-size: clamp(28px, 3.2vw, 38px);
     font-weight: 700;
     line-height: 0.96;
     letter-spacing: -0.05em;
     overflow-wrap: anywhere;
+  }
+  .toolName strong::after {
+    position: absolute;
+    z-index: -1;
+    right: -3px;
+    bottom: -3px;
+    left: -3px;
+    height: 0.2em;
+    background: var(--highlight);
+    content: '';
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s var(--ease-out);
   }
   .toolName small {
     display: block;
@@ -252,11 +276,8 @@ const year = new Date().getFullYear();
     overflow: hidden;
     background: var(--surface);
     box-shadow: 0 18px 34px -28px var(--shadow);
-    transform: rotate(-0.45deg);
-    transition: transform 0.55s var(--ease-out);
   }
-  .toolList li:nth-child(3n + 2) .toolVisual { transform: translateY(5px) rotate(0.55deg); }
-  .toolList li:nth-child(3n) .toolVisual { transform: rotate(0.2deg); }
+  button.toolVisual { position: relative; z-index: 1; padding: 0; border: 0; }
   .toolVisual img {
     display: block;
     width: 100%;
@@ -334,11 +355,11 @@ const year = new Date().getFullYear();
   footer a { color: inherit; text-decoration: none; }
 
   @media (hover: hover) and (pointer: fine) {
+    .toolName strong:hover::after { transform: scaleX(1); }
     .toolMain:hover { background: oklch(0.17 0.038 267 / 0.72); }
     .toolList li:hover::before,
     .toolList li:hover::after { border-color: var(--highlight); opacity: 1; }
-    .toolMain:hover .toolVisual { transform: translateY(-4px) rotate(-1deg); }
-    .toolMain:hover .toolVisual img { transform: scale(1.035) rotate(-0.5deg); }
+    .toolMain:hover .toolVisual img { transform: scale(1.035); }
     .toolList li:hover .toolStar { transform: rotate(7deg) scale(1.08); }
     .toolMain:hover .toolVisual b { transform: rotate(-3deg) scale(1.06); }
     .toolSource:hover span { transform: translate(3px, -3px); }
@@ -370,7 +391,6 @@ const year = new Date().getFullYear();
     }
     .toolName strong { font-size: clamp(20px, 6vw, 26px); }
     .toolStar { top: 6px; right: 7px; width: 25px; height: 25px; padding: 3px; }
-    .toolVisual { aspect-ratio: 16 / 10; }
     .toolSource { right: 11px; bottom: 21px; font-size: 0; }
     .toolSource span { margin: 0; font-size: 15px; }
   }

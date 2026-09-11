@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import SiteBackdrop from '../../components/home/SiteBackdrop.astro';
-import ToolsHeader from '../../components/tools/ToolsHeader.astro';
+import SubHeader from '../../components/SubHeader.astro';
 import { tracePlatform } from '../../lib/tools';
 import '../../styles/global.css';
 
@@ -31,7 +31,7 @@ const year = new Date().getFullYear();
   <body>
     <SiteBackdrop />
     <div class="site-column detailColumn">
-      <ToolsHeader />
+      <SubHeader section="tools" />
       <main>
         <a class="backLink" href="/tools"><span aria-hidden="true">←</span> 返回工具箱</a>
 
