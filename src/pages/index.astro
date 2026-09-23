@@ -20,6 +20,8 @@ const year = new Date().getFullYear();
     <meta name="theme-color" content="#111111" />
     <ClientRouter />
     <link rel="icon" href="/favicon-cat.png?v=2" type="image/png" />
+    <link rel="preload" as="image" href="/images/home-hero-cat.webp" media="(min-width: 901px)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/images/home-hero-cat-mobile.webp" media="(max-width: 900px)" fetchpriority="high" />
     <title>{title}</title>
   </head>
   <body>

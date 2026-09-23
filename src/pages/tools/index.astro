@@ -61,7 +61,7 @@ const year = new Date().getFullYear();
                     </a>
                     {tool.data.cover ? (
                       <button class="toolVisual" type="button" data-cover-preview={tool.data.coverFull ?? tool.data.cover} data-cover-name={tool.data.name} aria-label={`放大 ${tool.data.name} 封面`}>
-                        <img src={tool.data.cover} alt="" loading="lazy" />
+                        <img src={tool.data.cover} alt="" width="1200" height="675" loading="lazy" decoding="async" />
                       </button>
                     ) : (
                       <span class="toolVisual typeOnly" aria-hidden="true"><b>/</b></span>

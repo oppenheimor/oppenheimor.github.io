@@ -51,7 +51,7 @@ const year = new Date().getFullYear();
           </div>
         </header>
 
-        {tool.data.cover && <button class="toolCover" type="button" data-cover-preview={tool.data.coverFull ?? tool.data.cover} data-cover-name={tool.data.name} aria-label={`放大 ${tool.data.name} 封面`}><img src={tool.data.cover} alt={`${tool.data.name} 封面`} /></button>}
+        {tool.data.cover && <button class="toolCover" type="button" data-cover-preview={tool.data.coverFull ?? tool.data.cover} data-cover-name={tool.data.name} aria-label={`放大 ${tool.data.name} 封面`}><img src={tool.data.cover} alt={`${tool.data.name} 封面`} width="1200" height="675" decoding="async" /></button>}
 
         <section class="folder" aria-label={`${tool.data.name} 工具档案`}>
           <div class="folderTabs" role="tablist" aria-label="档案内容">
