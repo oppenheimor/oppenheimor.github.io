@@ -188,5 +188,6 @@ const headings = Astro.props.headings.filter(({ depth }) => depth === 2 || depth
     .outlinePanel[open] .outlineToggle { transform: rotate(180deg); }
     .outlineScroll { max-height: min(60dvh, 480px); margin: 0 8px 8px; }
   }
+  @media (max-width: 700px) { weekly-outline { display: none; } }
   @media (prefers-reduced-motion: reduce) { .outlineFlower, .outlineLink { transition: none; } }
 </style>
