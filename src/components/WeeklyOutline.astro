@@ -1,0 +1,192 @@
+---
+import type { MarkdownHeading } from 'astro';
+interface Props { headings: MarkdownHeading[] }
+const headings = Astro.props.headings.filter(({ depth }) => depth === 2 || depth === 3);
+---
+{headings.length > 0 && (
+  <weekly-outline>
+    <details class="outlinePanel" open>
+      <summary>文章大纲 <span class="outlineToggle" aria-hidden="true">⌄</span></summary>
+      <nav class="outlineScroll" aria-label="文章大纲">
+        <div class="outlineTree">
+          <svg class="outlineRail" aria-hidden="true"><path class="railBase" /><path class="railProgress" /></svg>
+          <span class="outlineStartMarker" aria-hidden="true"></span>
+          <span class="outlineFlower" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <g fill="var(--highlight)" stroke="var(--signal)" stroke-width=".6">
+                <circle cx="12" cy="5.8" r="3.6"/><circle cx="17.4" cy="8.9" r="3.6"/>
+                <circle cx="17.4" cy="15.1" r="3.6"/><circle cx="12" cy="18.2" r="3.6"/>
+                <circle cx="6.6" cy="15.1" r="3.6"/><circle cx="6.6" cy="8.9" r="3.6"/>
+              </g>
+              <circle cx="12" cy="12" r="3.4" fill="var(--canvas)" stroke="var(--ink)" stroke-width=".8"/>
+              <circle cx="12" cy="12" r="1.3" fill="var(--signal)"/>
+            </svg>
+          </span>
+          {headings.map(({ slug, text, depth }) => (
+            <a href={`#${slug}`} class:list={['outlineLink', { nested: depth === 3 }]} data-heading-id={slug}>
+              <span>{text}</span>
+            </a>
+          ))}
+        </div>
+      </nav>
+    </details>
+  </weekly-outline>
+)}
+
+<script>
+  class WeeklyOutline extends HTMLElement {
+    private cleanup?: () => void;
+    connectedCallback() {
+      const panel = this.querySelector('details')!;
+      const scroller = this.querySelector<HTMLElement>('.outlineScroll')!;
+      const tree = this.querySelector<HTMLElement>('.outlineTree')!;
+      const flower = this.querySelector<HTMLElement>('.outlineFlower')!;
+      const startMarker = this.querySelector<HTMLElement>('.outlineStartMarker')!;
+      const rail = this.querySelector<SVGSVGElement>('.outlineRail')!;
+      const base = this.querySelector<SVGPathElement>('.railBase')!;
+      const progress = this.querySelector<SVGPathElement>('.railProgress')!;
+      const links = Array.from(this.querySelectorAll<HTMLAnchorElement>('[data-heading-id]'));
+      const headings = links.map(link => document.getElementById(link.dataset.headingId!)!);
+      const article = document.querySelector<HTMLElement>('.weeklyArticle')!;
+      const title = article.querySelector('h1')!;
+      const desktop = matchMedia('(min-width: 1200px)');
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+      const controller = new AbortController();
+      const { signal } = controller;
+      let frame = 0;
+      let active = 0;
+      let points: { x: number; y: number }[] = [];
+      let paths: string[] = [];
+      let targetId: string | null = null;
+      let targetTimer: ReturnType<typeof setTimeout>;
+
+      const reveal = (index: number) => {
+        if (index < 0 || !panel.open) return;
+        const link = links[index];
+        const top = link.offsetTop;
+        const bottom = top + link.offsetHeight;
+        if (top < scroller.scrollTop + 12) scroller.scrollTop = Math.max(0, top - 12);
+        else if (bottom > scroller.scrollTop + scroller.clientHeight - 12)
+          scroller.scrollTop = bottom - scroller.clientHeight + 12;
+      };
+      const select = (index: number, force = false) => {
+        if (index === active && !force) return;
+        active = index;
+        links.forEach((link, i) => {
+          if (i === index) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+        flower.hidden = index < 0;
+        progress.setAttribute('d', paths[index] || '');
+        if (points[index]) flower.style.transform = `translate(${points[index].x - 9}px, ${points[index].y - 9}px)`;
+        reveal(index);
+      };
+      const update = () => {
+        frame = 0;
+        const readingLine = Math.min(160, innerHeight * .22);
+        let index = 0;
+        headings.forEach((heading, i) => {
+          if (heading && heading.getBoundingClientRect().top <= readingLine) index = i;
+        });
+        if (scrollY > 0 && Math.ceil(scrollY + innerHeight) >= document.documentElement.scrollHeight - 2) index = links.length - 1;
+        if (targetId) index = links.findIndex(link => link.dataset.headingId === targetId);
+        select(index);
+      };
+      const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+      const layout = () => {
+        if (desktop.matches) {
+          const titleTop = title.getBoundingClientRect().top + scrollY;
+          this.style.setProperty('--outline-top', `${Math.max(24, Math.min(titleTop, innerHeight - 180))}px`);
+        }
+        if (!panel.open) return;
+        points = links.map(link => ({ x: link.classList.contains('nested') ? 25 : 15, y: link.offsetTop + link.offsetHeight / 2 }));
+        let path = '';
+        paths = points.map((point, i) => {
+          if (!i) path = `M ${point.x} ${point.y}`;
+          else {
+            const prev = points[i - 1];
+            const mid = (prev.y + point.y) / 2;
+            path += ` C ${prev.x} ${mid}, ${point.x} ${mid}, ${point.x} ${point.y}`;
+          }
+          return path;
+        });
+        rail.setAttribute('viewBox', `0 0 ${tree.clientWidth} ${tree.scrollHeight}`);
+        base.setAttribute('d', path);
+        if (points[0]) startMarker.style.transform = `translate(${points[0].x - 3}px, ${points[0].y - 3}px)`;
+        select(active, true);
+        schedule();
+      };
+      const changeMode = () => { panel.open = desktop.matches; layout(); };
+      const unlock = () => { targetId = null; clearTimeout(targetTimer); schedule(); };
+      this.addEventListener('click', event => {
+        if (desktop.matches && (event.target as Element).closest('summary')) { event.preventDefault(); return; }
+        const link = (event.target as Element).closest<HTMLAnchorElement>('[data-heading-id]');
+        if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const heading = document.getElementById(link.dataset.headingId!);
+        if (!heading) return;
+        event.preventDefault();
+        clearTimeout(targetTimer);
+        targetId = heading.id;
+        history.pushState(null, '', link.hash);
+        if (!desktop.matches) panel.open = false;
+        heading.setAttribute('tabindex', '-1');
+        heading.focus({ preventScroll: true });
+        window.scrollTo({ top: Math.max(0, heading.getBoundingClientRect().top + scrollY - Math.min(140, innerHeight * .18)), behavior: reduced.matches ? 'instant' : 'smooth' });
+        select(links.indexOf(link));
+        targetTimer = setTimeout(unlock, 1400);
+      }, { signal });
+      window.addEventListener('scroll', schedule, { passive: true, signal });
+      window.addEventListener('scrollend', unlock, { signal });
+      window.addEventListener('wheel', unlock, { passive: true, signal });
+      window.addEventListener('touchstart', unlock, { passive: true, signal });
+      window.addEventListener('keydown', event => {
+        if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) unlock();
+      }, { signal });
+      window.addEventListener('resize', layout, { signal });
+      window.addEventListener('hashchange', unlock, { signal });
+      panel.addEventListener('toggle', layout, { signal });
+      desktop.addEventListener('change', changeMode, { signal });
+      const observer = new ResizeObserver(layout);
+      observer.observe(article);
+      observer.observe(tree);
+      changeMode();
+      this.cleanup = () => { controller.abort(); observer.disconnect(); cancelAnimationFrame(frame); clearTimeout(targetTimer); };
+    }
+    disconnectedCallback() { this.cleanup?.(); }
+  }
+  if (!customElements.get('weekly-outline')) customElements.define('weekly-outline', WeeklyOutline);
+</script>
+
+<style>
+  weekly-outline { position: fixed; left: max(32px, calc((100vw - 1360px) / 2 + 32px)); top: var(--outline-top, 140px); width: 240px; z-index: 20; }
+  .outlinePanel { display: flex; flex-direction: column; }
+  summary { display: flex; align-items: center; justify-content: space-between; padding: 0 12px 16px; color: var(--text-secondary); font-size: 12px; letter-spacing: .08em; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  .outlineToggle { display: none; }
+  .outlineScroll { max-height: calc(100dvh - var(--outline-top, 140px) - 60px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--hairline) transparent; }
+  .outlineTree { position: relative; }
+  .outlineRail { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .railBase, .railProgress { fill: none; stroke-width: 1.5; stroke-linecap: round; }
+  .railBase { stroke: var(--hairline); }
+  .railProgress { stroke: var(--highlight); stroke-width: 2; }
+  .outlineStartMarker { position: absolute; left: 0; top: 0; width: 6px; height: 6px; border: 1px solid var(--signal); border-radius: 50%; background: var(--canvas); pointer-events: none; transform: translate(-3px, -3px); z-index: 1; }
+  .outlineFlower { position: absolute; left: 0; top: 0; width: 18px; height: 18px; pointer-events: none; transition: transform .4s var(--ease-out); z-index: 2; }
+  .outlineFlower[hidden] { display: none; }
+  .outlineFlower svg { display: block; width: 100%; height: 100%; }
+  .outlineLink { display: block; position: relative; padding: 10px 10px 10px 36px; border-radius: 5px; color: var(--text-secondary); font-size: 13px; line-height: 1.6; text-decoration: none; overflow-wrap: anywhere; transition: color .25s, background .25s; }
+  .outlineLink.nested { padding-left: 46px; font-size: 13px; color: var(--text-secondary); }
+  .outlineLink:hover { color: var(--ink); background: var(--surface); }
+  .outlineLink[aria-current] { color: var(--ink); font-weight: 600; background: var(--highlight-soft); }
+  .outlineLink:focus-visible, summary:focus-visible { outline: 2px solid var(--signal); outline-offset: -2px; }
+  @media (min-width: 1200px) { summary { cursor: default; } }
+  @media (max-width: 1199px) {
+    weekly-outline { top: 16px; left: 20px; width: min(300px, calc(100vw - 40px)); }
+    .outlinePanel { width: max-content; max-width: 100%; border: 1px solid var(--hairline); border-radius: 6px; background: var(--surface-raised); }
+    .outlinePanel[open] { width: 100%; box-shadow: 0 16px 32px -20px var(--shadow); }
+    summary { gap: 24px; padding: 12px 14px; color: var(--text-secondary); cursor: pointer; }
+    .outlineToggle { display: inline; }
+    .outlinePanel[open] .outlineToggle { transform: rotate(180deg); }
+    .outlineScroll { max-height: min(60dvh, 480px); margin: 0 8px 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .outlineFlower, .outlineLink { transition: none; } }
+</style>

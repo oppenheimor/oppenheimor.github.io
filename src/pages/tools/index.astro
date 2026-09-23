@@ -18,7 +18,8 @@ const year = new Date().getFullYear();
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0c1426" />
+    <meta name="theme-color" content="#111111" />
+    <link rel="icon" href="/favicon-cat.png?v=2" type="image/png" />
     <title>{title}</title>
   </head>
   <body>
@@ -197,7 +198,7 @@ const year = new Date().getFullYear();
     z-index: 2;
     width: 13px;
     height: 13px;
-    border-color: oklch(0.47 0.06 254);
+    border-color: oklch(0.47 0.006 90);
     border-style: solid;
     content: '';
     opacity: 0.58;
@@ -356,7 +357,7 @@ const year = new Date().getFullYear();
 
   @media (hover: hover) and (pointer: fine) {
     .toolName strong:hover::after { transform: scaleX(1); }
-    .toolMain:hover { background: oklch(0.17 0.038 267 / 0.72); }
+    .toolMain:hover { background: oklch(0.17 0.005 90 / 0.72); }
     .toolList li:hover::before,
     .toolList li:hover::after { border-color: var(--highlight); opacity: 1; }
     .toolMain:hover .toolVisual img { transform: scale(1.035); }

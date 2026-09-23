@@ -5,7 +5,9 @@ import { issueDate, issueLabel, sortWeekly, weeklyPath } from '../../lib/weekly'
 
 const toolPreview = sortTools(await getCollection('tools', ({ data }) => data.published)).filter((tool) => !tool.data.retired).slice(0, 4);
 const weeklyIssues = sortWeekly(await getCollection('weekly', ({ data }) => data.published));
-const [latestIssue, ...backIssues] = weeklyIssues;
+const [latestIssue] = weeklyIssues;
+const weeklyCardsPerPage = 3;
+const weeklyPages = Array.from({ length: Math.ceil(weeklyIssues.length / weeklyCardsPerPage) }, (_, pageIndex) => weeklyIssues.slice(pageIndex * weeklyCardsPerPage, (pageIndex + 1) * weeklyCardsPerPage));
 ---
 
 <section id="garden" class="garden" aria-labelledby="garden-heading" data-reveal>
@@ -83,52 +85,50 @@ const [latestIssue, ...backIssues] = weeklyIssues;
   </div>
 
   <div id="panel-weekly" class="panel weeklyPanel" role="tabpanel" aria-labelledby="tab-weekly" hidden>
-    <div class="masthead">
-      <span class="mastheadName">周刊 / Weekly</span>
-      {weeklyIssues.length > 0 && <span class="mastheadMeta">每周一更新 · 已出 {String(weeklyIssues.length).padStart(2, '0')} 期</span>}
-    </div>
-
     {latestIssue ? (
-      <>
-        <a class="issueFeature" href={weeklyPath(latestIssue)}>
-          <span class="featureCover"><img src={latestIssue.data.cover} alt="" loading="lazy" /></span>
-          <span class="featureInfo">
-            <span class="featureMeta">
-              <b>{issueLabel(latestIssue.data.vol)}</b>
-              <time datetime={latestIssue.data.date.toISOString().slice(0, 10)}>{issueDate(latestIssue.data.date)}</time>
-              <em>最新一期</em>
-            </span>
-            <strong>{latestIssue.data.title}</strong>
-            <span class="featureLead">{latestIssue.data.summary}</span>
-            <span class="featureGo">读这一期 <span aria-hidden="true">→</span></span>
-          </span>
-        </a>
-
-        {backIssues.length > 0 && (
-          <div class="backIssues">
-            <p class="backLabel">往期</p>
-            <ul class="backList">
-              {backIssues.map((issue) => (
-                <li>
-                  <a href={weeklyPath(issue)}>
-                    <b>{issueLabel(issue.data.vol)}</b>
-                    <time datetime={issue.data.date.toISOString().slice(0, 10)}>{issueDate(issue.data.date)}</time>
-                    <strong>{issue.data.title}</strong>
-                    <span aria-hidden="true">→</span>
-                  </a>
-                </li>
+      <div class="weeklyStage">
+        <div class="weeklyTide" aria-hidden="true">
+          <svg viewBox="0 0 1000 240" preserveAspectRatio="none">
+            <path class="tideBack" d="M0 126C146 57 284 58 424 123c147 68 302 106 576-16v133H0Z" />
+            <path class="tideFront" d="M0 166c154-71 286-38 432 14 166 59 321 42 568-45v188H0Z" />
+          </svg>
+        </div>
+        <div class="weeklyCarousel" data-weekly-carousel>
+          <button class="weeklyArrow weeklyArrowPrev" type="button" data-weekly-prev aria-label="上一期" disabled={weeklyIssues.length <= 1}>←</button>
+          <div class="weeklyViewport">
+            <div class="weeklyTrack" data-weekly-track>
+              {weeklyPages.map((page) => (
+                <div class="weeklyPage" data-weekly-page>
+                  {page.map((issue) => (
+                    <a class:list={['weeklyIssueCard', { isCurrent: issue.id === latestIssue.id }]} href={weeklyPath(issue)} data-weekly-slide>
+                      <span class="weeklyCardSurface">
+                        <span class="weeklyCardCover"><img data-weekly-cover={issue.id} src={issue.data.cover} alt="" loading="lazy" /></span>
+                        <span class="weeklyCardCaption">
+                          <span class="weeklyCardMeta">
+                            <b>{issueLabel(issue.data.vol)}</b>
+                            <time datetime={issue.data.date.toISOString().slice(0, 10)}>{issueDate(issue.data.date)}</time>
+                          </span>
+                          <strong>{issue.data.title}</strong>
+                          <span class="weeklyCardSummary">{issue.data.summary}</span>
+                          <span class="weeklyCardAction" aria-hidden="true">↗</span>
+                        </span>
+                      </span>
+                      <span class="weeklyCardReflection" aria-hidden="true"><img src={issue.data.cover} alt="" /></span>
+                    </a>
+                  ))}
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
-        )}
-      </>
+          <button class="weeklyArrow weeklyArrowNext" type="button" data-weekly-next aria-label="下一期" disabled={weeklyIssues.length <= 1}>→</button>
+          {weeklyPages.length > 1 && <span class="weeklyProgress" data-weekly-progress>01 / {String(weeklyPages.length).padStart(2, '0')}</span>}
+        </div>
+      </div>
     ) : (
       <div class="statement compactStatement">
         <strong>周刊还没到第一期。</strong>
       </div>
     )}
-
-    <a class="panelLink" href="/weekly">查看全部周刊 <span aria-hidden="true">→</span></a>
   </div>
 
   <div id="panel-about" class="panel textPanel" role="tabpanel" aria-labelledby="tab-about" hidden>
@@ -144,8 +144,12 @@ const [latestIssue, ...backIssues] = weeklyIssues;
 </section>
 
 <script>
-  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
-  const digit = document.querySelector<HTMLElement>('[data-section-digit]');
+  const initGardenTabs = () => {
+    const garden = document.querySelector<HTMLElement>('#garden');
+    if (!garden || garden.dataset.initialized === 'true') return;
+    garden.dataset.initialized = 'true';
+
+    const tabs = Array.from(garden.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
   const tabsDock = document.querySelector<HTMLElement>('[data-tabs-dock]');
   const tabsSentinel = document.querySelector<HTMLElement>('[data-tabs-sentinel]');
 
@@ -169,7 +173,6 @@ const [latestIssue, ...backIssues] = weeklyIssues;
         panel.classList.toggle('panelEnter', active);
       }
     });
-    if (digit) digit.textContent = String(tabs.indexOf(selected) + 1);
     if (shouldPersist) {
       const currentState = typeof history.state === 'object' && history.state !== null ? history.state : {};
       history.replaceState({ ...currentState, gardenTab: selected.id }, '');
@@ -192,8 +195,68 @@ const [latestIssue, ...backIssues] = weeklyIssues;
     });
   });
 
-  const savedTab = tabs.find((tab) => tab.id === history.state?.gardenTab);
+  const requestedTab = new URLSearchParams(location.search).get('garden');
+  const savedTab = tabs.find((tab) => tab.id === history.state?.gardenTab) ?? (requestedTab ? tabs.find((tab) => tab.id === `tab-${requestedTab}`) : undefined);
   if (savedTab) selectTab(savedTab, false, false);
+
+  const weeklyTrack = document.querySelector<HTMLElement>('[data-weekly-track]');
+  const weeklyPages = weeklyTrack ? Array.from(weeklyTrack.querySelectorAll<HTMLElement>('[data-weekly-page]')) : [];
+  const weeklyProgress = document.querySelector<HTMLElement>('[data-weekly-progress]');
+  const weeklyPrev = document.querySelector<HTMLButtonElement>('[data-weekly-prev]');
+  const weeklyNext = document.querySelector<HTMLButtonElement>('[data-weekly-next]');
+
+  if (weeklyTrack && weeklyPages.length > 1) {
+    const getPageWidth = () => weeklyTrack.clientWidth;
+    const getPageIndex = () => {
+      const pageWidth = getPageWidth();
+      return pageWidth === 0 ? 0 : Math.min(weeklyPages.length - 1, Math.max(0, Math.round(weeklyTrack.scrollLeft / pageWidth)));
+    };
+
+    const updateWeeklyState = () => {
+      const pageIndex = getPageIndex();
+      weeklyPages.forEach((page, index) => {
+        page.classList.toggle('isCurrent', index === pageIndex);
+        page.querySelectorAll<HTMLElement>('[data-weekly-slide]').forEach((slide, slideIndex) => slide.classList.toggle('isCurrent', index === pageIndex && slideIndex === 0));
+      });
+      if (weeklyProgress) weeklyProgress.textContent = `${String(pageIndex + 1).padStart(2, '0')} / ${String(weeklyPages.length).padStart(2, '0')}`;
+      if (weeklyPrev) weeklyPrev.disabled = pageIndex === 0;
+      if (weeklyNext) weeklyNext.disabled = pageIndex === weeklyPages.length - 1;
+    };
+
+    const scrollWeekly = (direction: number) => {
+      const targetPage = Math.min(weeklyPages.length - 1, Math.max(0, getPageIndex() + direction));
+      weeklyTrack.scrollTo({ left: targetPage * getPageWidth(), behavior: 'smooth' });
+    };
+
+    let updateFrame = 0;
+    const scheduleWeeklyStateUpdate = () => {
+      if (updateFrame) return;
+      updateFrame = window.requestAnimationFrame(() => {
+        updateFrame = 0;
+        updateWeeklyState();
+      });
+    };
+
+    weeklyPrev?.addEventListener('click', () => scrollWeekly(-1));
+    weeklyNext?.addEventListener('click', () => scrollWeekly(1));
+    weeklyTrack.addEventListener('scroll', scheduleWeeklyStateUpdate, { passive: true });
+    window.addEventListener('resize', scheduleWeeklyStateUpdate);
+    document.querySelector('#tab-weekly')?.addEventListener('click', scheduleWeeklyStateUpdate);
+    updateWeeklyState();
+  }
+
+    garden.querySelectorAll<HTMLAnchorElement>('[data-weekly-slide]').forEach((link) => {
+      link.addEventListener('click', () => {
+        const image = link.querySelector<HTMLImageElement>('[data-weekly-cover]');
+        if (!image) return;
+        const rect = image.getBoundingClientRect();
+        sessionStorage.setItem('weekly-cover-origin', JSON.stringify({ top: rect.top, left: rect.left, width: rect.width, height: rect.height }));
+      });
+    });
+  };
+
+  document.addEventListener('astro:page-load', initGardenTabs);
+  initGardenTabs();
 </script>
 
 <style>
@@ -852,197 +915,232 @@ const [latestIssue, ...backIssues] = weeklyIssues;
   .articleRow b { font-size: 22px; font-weight: 400; }
 
   .weeklyPanel {
-    padding-top: 38px;
+    padding-top: 22px;
   }
 
-  .masthead {
+  .weeklyStage {
+    position: relative;
+    isolation: isolate;
+    min-height: 488px;
+    margin-top: 18px;
+    padding: 28px 0 24px;
+  }
+
+  .weeklyTide {
+    position: absolute;
+    right: -9%;
+    bottom: 0;
+    left: -9%;
+    z-index: -1;
+    height: 188px;
+    pointer-events: none;
+  }
+
+  .weeklyTide svg { display: block; width: 100%; height: 100%; }
+  .weeklyTide .tideBack { fill: var(--highlight-soft); }
+  .weeklyTide .tideFront { fill: color-mix(in oklch, var(--highlight) 18%, transparent); }
+
+  .weeklyCarousel { position: relative; z-index: 1; }
+
+  .weeklyViewport {
+    overflow: hidden;
+    padding: 0 72px;
+  }
+
+  .weeklyTrack {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px 28px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--hairline);
-    color: var(--text-muted);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.16em;
+    width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
   }
 
-  .mastheadName {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    color: var(--text-muted);
-    letter-spacing: 0.34em;
-    text-transform: uppercase;
-  }
+  .weeklyTrack::-webkit-scrollbar { display: none; }
 
-  .mastheadName::before {
-    width: 28px;
-    height: 1px;
-    background: var(--ink);
-    content: '';
-  }
-
-  .mastheadMeta { color: var(--signal); letter-spacing: 0.14em; }
-
-  .issueFeature {
+  .weeklyPage {
+    flex: 0 0 100%;
     display: grid;
-    grid-template-columns: 232px minmax(0, 1fr);
-    align-items: center;
-    gap: 34px;
-    padding: 34px 0 34px;
-    border-bottom: 1px solid var(--hairline);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    gap: 24px;
+    padding: 32px 8px 34px;
+    scroll-snap-align: start;
+  }
+
+  .weeklyIssueCard {
+    --wave-lift: 0px;
+    position: relative;
+    min-width: 0;
+    display: block;
     color: inherit;
     text-decoration: none;
+    transform: translateY(var(--wave-lift));
+    transition: transform 0.7s var(--ease-out);
   }
 
-  .featureCover {
+  .weeklyIssueCard:nth-child(2) { --wave-lift: 28px; }
+  .weeklyIssueCard.isCurrent { --wave-lift: -20px; }
+
+  .weeklyCardSurface {
     display: block;
     overflow: hidden;
     border: 1px solid var(--hairline);
-    background: var(--surface);
-    aspect-ratio: 3 / 2;
-    transition: border-color 0.5s var(--ease-out);
+    border-radius: 22px 22px 14px 14px;
+    background: var(--surface-raised);
+    transition: border-color 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
   }
 
-  .featureCover img {
+  .weeklyIssueCard.isCurrent .weeklyCardSurface {
+    border-color: var(--signal);
+    box-shadow: 0 0 0 4px var(--signal-soft);
+  }
+
+  .weeklyCardCover {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 5 / 3;
+    background: var(--surface);
+  }
+
+  .weeklyCardCover img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 1s var(--ease-out);
+    transition: transform 0.9s var(--ease-out);
   }
 
-  .featureInfo { display: block; min-width: 0; }
-
-  .featureMeta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 12px;
-    color: var(--text-muted);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-  }
-
-  .featureMeta b {
-    color: var(--ink);
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-  }
-
-  .featureMeta em {
-    padding: 3px 8px;
-    background: var(--highlight-soft);
-    color: var(--signal);
-    font-style: normal;
-    letter-spacing: 0.14em;
-  }
-
-  .featureInfo strong {
+  .weeklyCardCaption {
     position: relative;
-    isolation: isolate;
     display: block;
-    width: fit-content;
-    max-width: 100%;
-    margin-top: 16px;
-    font-size: clamp(30px, 4vw, 42px);
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.05em;
+    min-height: 168px;
+    padding: 18px 18px 20px;
   }
 
-  .featureInfo strong::after {
-    position: absolute;
-    right: -3px;
-    bottom: -3px;
-    left: -3px;
-    z-index: -1;
-    height: 0.2em;
-    background: var(--highlight);
-    content: '';
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.5s var(--ease-out);
-  }
-
-  .featureLead {
-    display: block;
-    max-width: 34ch;
-    margin-top: 14px;
-    color: var(--text-secondary);
-    font-size: 14px;
-    line-height: 1.8;
-  }
-
-  .featureGo {
-    display: inline-flex;
-    align-items: center;
+  .weeklyCardMeta {
+    display: flex;
+    justify-content: space-between;
     gap: 8px;
-    margin-top: 22px;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-  }
-
-  .featureGo span { display: inline-block; transition: transform 0.5s var(--ease-out); }
-
-  .backLabel {
-    margin: 0 0 20px;
     color: var(--text-muted);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-  }
-
-  .backIssues { padding: 30px 0 0; }
-
-  .backList { display: grid; margin: 0; padding: 0; list-style: none; }
-
-  .backList a {
-    display: grid;
-    grid-template-columns: 84px 92px minmax(0, 1fr) 18px;
-    align-items: baseline;
-    gap: 18px;
-    padding: 16px 4px;
-    border-top: 1px solid var(--hairline);
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .backList li:last-child a { border-bottom: 1px solid var(--hairline); }
-
-  .backList b {
-    color: var(--signal);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.06em;
+    line-height: 1.4;
+    letter-spacing: 0.05em;
   }
 
-  .backList time {
+  .weeklyCardMeta b { color: var(--signal); font-weight: 500; }
+  .weeklyCardCaption strong { display: block; margin-top: 14px; padding-right: 38px; font-size: 26px; line-height: 1.08; letter-spacing: -0.055em; }
+
+  .weeklyCardSummary {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-top: 14px;
+    padding-right: 36px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.65;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .weeklyCardAction {
+    position: absolute;
+    right: 17px;
+    bottom: 18px;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid color-mix(in oklch, var(--signal) 62%, var(--hairline));
+    border-radius: 50%;
+    color: var(--signal);
+    font-size: 14px;
+    transition: background 0.4s var(--ease-out), color 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+  }
+
+  .weeklyCardReflection {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 70px;
+    margin: -1px 14px 0;
+    border-radius: 0 0 46% 46%;
+    opacity: 0.28;
+    filter: blur(1px) saturate(0.72);
+    transform: perspective(180px) rotateX(25deg);
+    transform-origin: top center;
+    -webkit-mask-image: linear-gradient(to bottom, oklch(0 0 0 / 0.9) 0%, oklch(0 0 0 / 0.5) 35%, transparent 100%);
+    mask-image: linear-gradient(to bottom, oklch(0 0 0 / 0.9) 0%, oklch(0 0 0 / 0.5) 35%, transparent 100%);
+  }
+
+  .weeklyCardReflection::before {
+    position: absolute;
+    top: 0;
+    right: 8%;
+    left: 8%;
+    z-index: 1;
+    height: 1px;
+    background: color-mix(in oklch, var(--ink) 28%, transparent);
+    content: '';
+  }
+
+  .weeklyCardReflection::after {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(to bottom, transparent 0 8px, color-mix(in oklch, var(--ink) 9%, transparent) 9px 10px);
+    content: '';
+  }
+
+  .weeklyCardReflection img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+    transform: scaleY(-1);
+  }
+
+  .weeklyIssueCard.isCurrent .weeklyCardReflection { opacity: 0.34; }
+
+  .weeklyArrow {
+    position: absolute;
+    top: 47%;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid color-mix(in oklch, var(--ink) 72%, var(--hairline));
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--surface-raised) 96%, transparent);
+    box-shadow: 0 0 0 5px color-mix(in oklch, var(--highlight-soft) 80%, transparent), 0 12px 24px var(--shadow);
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    transform: translateY(-50%);
+    transition: border-color 0.4s var(--ease-out), color 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+  }
+
+  .weeklyArrow:hover:not(:disabled) { border-color: var(--signal); color: var(--signal); transform: translateY(-50%) scale(1.05); }
+  .weeklyArrow:disabled { opacity: 0.32; cursor: default; }
+  .weeklyArrow:focus-visible { outline-offset: 6px; }
+  .weeklyArrowPrev { left: 12px; }
+  .weeklyArrowNext { right: 12px; }
+
+  .weeklyProgress {
+    position: absolute;
+    right: 48px;
+    bottom: 0;
+    z-index: 3;
     color: var(--text-muted);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    font-size: 12px;
+    letter-spacing: 0.1em;
   }
 
-  .backList strong {
-    color: var(--text-secondary);
-    font-size: 16px;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    transition: color 0.4s var(--ease-out);
-  }
-
-  .backList a span {
-    color: var(--text-muted);
-    font-size: 15px;
-    transition: transform 0.5s var(--ease-out), color 0.4s var(--ease-out);
-  }
+  .backIssues,
+  .backList { display: none; }
 
   @media (hover: hover) and (pointer: fine) {
     .tab:not(.isActive):hover { color: var(--text-secondary); opacity: 1; transform: translateY(-2px); }
@@ -1051,12 +1149,9 @@ const [latestIssue, ...backIssues] = weeklyIssues;
     .projectHitbox:hover .projectNumber { transform: translateY(-6px); }
     .projectHitbox:hover .go span { transform: translateX(7px); }
     .articleRow:hover { padding-left: 20px; }
-    .issueFeature:hover .featureCover { border-color: oklch(0.48 0.11 250); }
-    .issueFeature:hover .featureCover img { transform: scale(1.04); }
-    .issueFeature:hover .featureInfo strong::after { transform: scaleX(1); }
-    .issueFeature:hover .featureGo span { transform: translateX(7px); }
-    .backList a:hover strong { color: var(--ink); }
-    .backList a:hover span { color: var(--ink); transform: translateX(5px); }
+    .weeklyIssueCard:hover .weeklyCardSurface { border-color: oklch(0.48 0.11 250); }
+    .weeklyIssueCard:hover .weeklyCardCover img { transform: scale(1.04); }
+    .weeklyIssueCard:hover .weeklyCardAction { background: var(--signal); color: var(--canvas); transform: translate(2px, -2px); }
     .homeToolFile:hover .fileCaption { transform: translateY(-2px); }
     .panelLink:hover { color: var(--ink); transform: translateY(-2px); }
     .panelLink:hover::after { opacity: 0.9; transform: rotate(0) scaleX(1.03); }
@@ -1140,26 +1235,38 @@ const [latestIssue, ...backIssues] = weeklyIssues;
 
     .articleRow time { grid-column: 1 / -1; }
 
-    .issueFeature {
-      grid-template-columns: 116px minmax(0, 1fr);
+    .weeklyStage {
+      min-height: 0;
+      margin-top: 14px;
+      padding: 16px 0 18px;
+    }
+
+    .weeklyTide { right: -34%; left: -34%; height: 146px; }
+    .weeklyCarousel { margin-right: -20px; margin-left: -20px; }
+    /* Full-width carousel: 12px outer gap + 40px button + 12px card gap. */
+    .weeklyViewport { padding: 0 64px; }
+    .weeklyPage {
+      grid-template-columns: 1fr;
       gap: 18px;
-      padding: 24px 0;
+      padding: 26px 0 34px;
     }
+    .weeklyCardSurface { border-radius: 15px 15px 10px 10px; }
+    .weeklyIssueCard,
+    .weeklyIssueCard:nth-child(2),
+    .weeklyIssueCard.isCurrent { --wave-lift: 0px; }
+    .weeklyCardCaption { min-height: 138px; padding: 14px 13px 16px; }
+    .weeklyCardMeta { font-size: 9px; }
+    .weeklyCardCaption strong { margin-top: 10px; padding-right: 30px; font-size: 20px; }
+    .weeklyCardSummary { margin-top: 10px; padding-right: 28px; font-size: 11px; line-height: 1.55; }
+    .weeklyCardAction { right: 12px; bottom: 14px; width: 26px; height: 26px; }
+    .weeklyCardReflection { height: 46px; margin: -1px 9px 0; transform: perspective(140px) rotateX(22deg); }
 
-    .featureMeta b { font-size: 13px; }
-    .featureInfo strong { margin-top: 12px; font-size: clamp(26px, 8vw, 34px); }
-    .featureLead { margin-top: 12px; font-size: 13px; }
-    .featureGo { margin-top: 16px; }
+    .weeklyArrow { width: 40px; height: 40px; font-size: 20px; }
+    .weeklyArrowPrev { left: 12px; }
+    .weeklyArrowNext { right: 12px; }
+    .weeklyProgress { right: 32px; bottom: 0; }
 
-    .backLabel { margin-bottom: 16px; }
-
-    .backList a {
-      grid-template-columns: 76px minmax(0, 1fr) 16px;
-      gap: 10px;
-      padding: 14px 0;
-    }
-
-    .backList time { display: none; }
-    .backList strong { font-size: 15px; }
+    .backIssues,
+    .backList { display: none; }
   }
 </style>

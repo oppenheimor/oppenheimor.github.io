@@ -1,0 +1,149 @@
+---
+import { CAT_EYES } from '../lib/cat-gaze';
+interface Props { compact?: boolean }
+const { compact = false } = Astro.props;
+---
+<cat-watermark class:list={['catWatermark', { compact }]} aria-hidden="true">
+  <div class="catBody" style="position: relative;">
+    <img src="/images/mascot/black-cat.webp" alt="" width="640" height="673" draggable="false" />
+    <svg class="catEyes" viewBox="0 0 640 673" focusable="false" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+      {CAT_EYES.map(({ x, y }) => (
+        <g>
+          <ellipse cx={x} cy={y} rx="39" ry="40" fill="#dfc6a0" />
+          <g data-cat-pupil>
+            <ellipse cx={x} cy={y} rx="26" ry="30" fill="#15130f" />
+            <circle cx={x + 7} cy={y - 14} r="10" fill="#e5ddd5" />
+          </g>
+        </g>
+      ))}
+    </svg>
+  </div>
+</cat-watermark>
+
+<script>
+  import { CAT_EYES, catGaze } from '../lib/cat-gaze';
+
+  class CatWatermark extends HTMLElement {
+    private cleanup?: () => void;
+
+    connectedCallback() {
+      this.cleanup?.();
+      const body = this.querySelector<HTMLElement>('.catBody')!;
+      const pupils = [...this.querySelectorAll<SVGGElement>('[data-cat-pupil]')];
+      const motion = matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
+      const controller = new AbortController();
+      const { signal } = controller;
+      const current = [0, 0, 0, 0, 0];
+      let target = [...current];
+      let frame = 0;
+      let previousTime = 0;
+      let bounds = this.getBoundingClientRect();
+
+      const paint = () => {
+        pupils.forEach((pupil, i) => {
+          pupil.setAttribute('transform', `translate(${current[i * 2]} ${current[i * 2 + 1]})`);
+        });
+        body.style.transform = `rotate(${current[4]}deg)`;
+      };
+      const tick = (time: number) => {
+        frame = 0;
+        const delta = previousTime ? Math.min(time - previousTime, 64) : 16;
+        previousTime = time;
+        const ease = 1 - Math.exp(-delta / 110);
+        let moving = false;
+        current.forEach((value, i) => {
+          const difference = target[i] - value;
+          if (Math.abs(difference) > 0.005) {
+            current[i] += difference * ease;
+            moving = true;
+          } else current[i] = target[i];
+        });
+        paint();
+        if (moving) frame = requestAnimationFrame(tick);
+        else previousTime = 0;
+      };
+      const animate = () => { if (!frame) frame = requestAnimationFrame(tick); };
+      const reset = (immediate = false) => {
+        target = [0, 0, 0, 0, 0];
+        if (immediate) {
+          cancelAnimationFrame(frame);
+          frame = 0;
+          previousTime = 0;
+          current.fill(0);
+          paint();
+        } else animate();
+      };
+      const refresh = () => {
+        bounds = this.getBoundingClientRect();
+        this.toggleAttribute('data-tracking', motion.matches && !document.hidden);
+        reset(true);
+      };
+      window.addEventListener('pointermove', event => {
+        if (!motion.matches || document.hidden || event.pointerType !== 'mouse' || !bounds.width) return;
+        target = CAT_EYES.flatMap(eye => {
+          const gaze = catGaze(
+            event.clientX - (bounds.left + eye.x / 640 * bounds.width),
+            event.clientY - (bounds.top + eye.y / 673 * bounds.height),
+          );
+          return [gaze.x, gaze.y];
+        });
+        target.push(Math.max(-1.5, Math.min(1.5, (event.clientX - bounds.left - bounds.width / 2) / 400)));
+        animate();
+      }, { passive: true, signal });
+      document.documentElement.addEventListener('pointerleave', () => reset(), { signal });
+      window.addEventListener('blur', () => reset(), { signal });
+      window.addEventListener('resize', refresh, { passive: true, signal });
+      document.addEventListener('visibilitychange', refresh, { signal });
+      motion.addEventListener('change', refresh, { signal });
+      refresh();
+      this.cleanup = () => {
+        controller.abort();
+        reset(true);
+      };
+    }
+
+    disconnectedCallback() { this.cleanup?.(); }
+  }
+  if (!customElements.get('cat-watermark')) customElements.define('cat-watermark', CatWatermark);
+</script>
+
+<style>
+  .catWatermark {
+    display: block;
+    position: fixed;
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 1;
+    width: clamp(160px, 18vw, 300px);
+    opacity: 0.42;
+    filter: grayscale(0.55) contrast(1.35) brightness(1.12);
+    pointer-events: none;
+    user-select: none;
+  }
+  .catBody { position: relative; transform-origin: 50% 90%; }
+  img { display: block; width: 100%; height: auto; }
+  .catEyes { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+  [data-tracking] .catEyes { display: block; }
+  @media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+    .catBody { transform: none !important; }
+    .catEyes { display: none !important; }
+  }
+
+  @media (max-width: 1100px) {
+    .catWatermark { width: 160px; opacity: 0.22; right: 12px; }
+  }
+  @media (max-width: 700px) {
+    .catWatermark { width: 112px; opacity: 0.14; right: 8px; }
+  }
+  .catWatermark.compact {
+    width: clamp(96px, 9vw, 144px);
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  @media (max-width: 700px) {
+    .catWatermark.compact { width: 72px; }
+  }
+  @media print {
+    .catWatermark { display: none; }
+  }
+</style>

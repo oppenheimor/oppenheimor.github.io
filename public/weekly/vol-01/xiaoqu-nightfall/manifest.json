@@ -1,0 +1,41 @@
+{
+  "source": {
+    "path": "/Users/paulchess/Desktop/Home/products/oppenheimor.github.io/public/weekly/vol-01/xiaoqu-nightfall-source.png",
+    "sha256": "9f54d4d476c4a0a5dd4a9e5f7653ac323d10d0a284366baa67ec9a87e6a4fc73",
+    "width": 1672,
+    "height": 941
+  },
+  "crop": null,
+  "background": {
+    "provenance": "deterministic-source-adaptive",
+    "color": {
+      "r": 29,
+      "g": 21,
+      "b": 8
+    },
+    "method": "opaque-corner-average"
+  },
+  "placement": {
+    "mode": "banner",
+    "width": 1199,
+    "height": 675,
+    "left": 1,
+    "top": 0,
+    "scale": 0.7173219978746015
+  },
+  "preview": {
+    "file": "original.webp",
+    "width": 1672,
+    "height": 941,
+    "lossless": true,
+    "bytes": 2158660
+  },
+  "thumbnail": {
+    "file": "cover.webp",
+    "width": 1200,
+    "height": 675,
+    "quality": 92,
+    "bytes": 290932
+  },
+  "warnings": []
+}

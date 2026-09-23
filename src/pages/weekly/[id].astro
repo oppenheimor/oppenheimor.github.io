@@ -1,23 +1,21 @@
 ---
 import { getCollection, render } from 'astro:content';
+import { ClientRouter } from 'astro:transitions';
 import SiteBackdrop from '../../components/home/SiteBackdrop.astro';
-import SubHeader from '../../components/SubHeader.astro';
-import CoverLightbox from '../../components/CoverLightbox.astro';
-import { issueDate, issueLabel, issueNeighbors, sortWeekly, weeklyPath } from '../../lib/weekly';
+import CatWatermark from '../../components/CatWatermark.astro';
+import WeeklyOutline from '../../components/WeeklyOutline.astro';
+import { issueLabel, sortWeekly } from '../../lib/weekly';
 import '../../styles/global.css';
 
 export async function getStaticPaths() {
   const issues = sortWeekly(await getCollection('weekly', ({ data }) => data.published));
-  return issues.map((issue) => ({ params: { id: issue.id }, props: { issue, issues } }));
+  return issues.map((issue) => ({ params: { id: issue.id }, props: { issue } }));
 }
 
-const { issue, issues } = Astro.props;
-const { Content } = await render(issue);
-const { newer, older } = issueNeighbors(issues, issue);
+const { issue } = Astro.props;
+const { Content, headings } = await render(issue);
 const title = `${issueLabel(issue.data.vol)} ${issue.data.title} — 周刊 — Oppenheimor`;
 const description = issue.data.summary;
-const year = new Date().getFullYear();
-const isoDate = issue.data.date.toISOString().slice(0, 10);
 ---
 
 <!doctype html>
@@ -26,664 +24,208 @@ const isoDate = issue.data.date.toISOString().slice(0, 10);
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0c1426" />
+    <meta name="theme-color" content="#111111" />
+    <ClientRouter />
+    <link rel="icon" href="/favicon-cat.png?v=2" type="image/png" />
     <title>{title}</title>
   </head>
   <body>
-    <SiteBackdrop />
-    <div class="site-column issueColumn">
-      <SubHeader section="weekly" />
+    <SiteBackdrop showProgress={false} />
+    <CatWatermark compact />
+    <WeeklyOutline headings={headings} />
+    <div class="site-column weeklyReader">
       <main>
-        <a class="backLink" href="/weekly"><span aria-hidden="true">←</span> 返回周刊</a>
+        <article class="weeklyArticle">
+          <header class="articleHeader" data-weekly-entrance="header">
+            <a class="homeLink" href="/?garden=weekly#garden" aria-label="返回首页">
+              <svg class="homeLinkIcon" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M10.5 3.5 6 8l4.5 4.5M6.5 8H14" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+              </svg>
+              <span>返回首页</span>
+            </a>
+            <h1>{issueLabel(issue.data.vol)} - {issue.data.title}</h1>
+          </header>
 
-        <header class="issueHeading">
-          <div class="headingMeta">
-            <span>{issueLabel(issue.data.vol)} / Weekly</span>
-            <time datetime={isoDate}>{issueDate(issue.data.date)}</time>
-            <span>每周一发布</span>
-          </div>
-          <h1>{issue.data.title}</h1>
-          <p class="dek">{issue.data.summary}</p>
-          {issue.data.tags.length > 0 && (
-            <ul class="headingTags" aria-label="标签">
-              {issue.data.tags.map((tag) => <li>{tag}</li>)}
-            </ul>
-          )}
-        </header>
+          <figure class="articleCover">
+            <img data-weekly-cover-target src={issue.data.coverFull ?? issue.data.cover} alt={`${issueLabel(issue.data.vol)} ${issue.data.title} 封面`} />
+          </figure>
 
-        <div class="issueBody">
-          <aside class="issueAside" aria-label="本期导航">
-            <div class="asideSticky">
-              <button
-                class="asideCover"
-                type="button"
-                data-cover-preview={issue.data.coverFull ?? issue.data.cover}
-                data-cover-name={`${issueLabel(issue.data.vol)} ${issue.data.title}`}
-                aria-label={`放大 ${issueLabel(issue.data.vol)} 封面`}
-              >
-                <img src={issue.data.cover} alt={`${issueLabel(issue.data.vol)} 封面`} />
-              </button>
+          <p class="articleSummary" data-weekly-entrance="summary">{issue.data.summary}</p>
 
-              <button class="switchButton" type="button" data-open-issue-nav aria-haspopup="dialog">
-                <span>切换期数</span>
-                <b>{String(issues.length).padStart(2, '0')}</b>
-              </button>
-
-              <nav class="asidePager" aria-label="相邻期数">
-                {older ? (
-                  <a href={weeklyPath(older)} rel="prev">
-                    <span>上一期</span>
-                    <strong>{issueLabel(older.data.vol)} {older.data.title}</strong>
-                  </a>
-                ) : (
-                  <span class="asideEmpty">已经是最早的一期</span>
-                )}
-                {newer ? (
-                  <a href={weeklyPath(newer)} rel="next">
-                    <span>下一期</span>
-                    <strong>{issueLabel(newer.data.vol)} {newer.data.title}</strong>
-                  </a>
-                ) : (
-                  <span class="asideEmpty">这已经是最新一期</span>
-                )}
-              </nav>
-            </div>
-          </aside>
-
-          <article class="issueContent">
+          <div class="markdownContent" data-weekly-entrance="body">
             <Content />
-          </article>
-        </div>
-
-        <nav class="issuePager" aria-label="相邻期数">
-          {older ? (
-            <a class="pagerBlock" href={weeklyPath(older)} rel="prev">
-              <span>{issueLabel(older.data.vol)} · 上一期</span>
-              <strong>{older.data.title}</strong>
-              <b aria-hidden="true">←</b>
-            </a>
-          ) : (
-            <span class="pagerBlock isDisabled">
-              <span>上一期</span>
-              <strong>已经是最早的一期</strong>
-            </span>
-          )}
-          {newer ? (
-            <a class="pagerBlock pagerNext" href={weeklyPath(newer)} rel="next">
-              <span>{issueLabel(newer.data.vol)} · 下一期</span>
-              <strong>{newer.data.title}</strong>
-              <b aria-hidden="true">→</b>
-            </a>
-          ) : (
-            <span class="pagerBlock isDisabled pagerNext">
-              <span>下一期</span>
-              <strong>这一期还没写完</strong>
-            </span>
-          )}
-        </nav>
+          </div>
+        </article>
       </main>
-      <footer><span>© {year} OPPENHEIMOR®</span><a href="/weekly">周刊归档</a></footer>
     </div>
 
-    <button class="issueFab" type="button" data-open-issue-nav aria-haspopup="dialog">
-      <span aria-hidden="true">☰</span> 期数
-    </button>
-
-    <dialog class="issueDialog" data-issue-dialog aria-labelledby="issueDialogTitle">
-      <div class="dialogInner">
-        <header class="dialogHead">
-          <div>
-            <p class="dialogKicker">ARCHIVE / 周刊归档</p>
-            <h2 id="issueDialogTitle">全部期数</h2>
-          </div>
-          <button class="dialogClose" type="button" data-issue-dialog-close aria-label="关闭期数导航">×</button>
-        </header>
-        <ol class="dialogList">
-          {issues.map((item) => (
-            <li>
-              <a class="dialogItem" href={weeklyPath(item)} aria-current={item.id === issue.id ? 'page' : undefined}>
-                <span class="dialogCover"><img src={item.data.cover} alt="" loading="lazy" /></span>
-                <span class="dialogText">
-                  <span class="dialogMeta">
-                    <b>{issueLabel(item.data.vol)}</b>
-                    <time datetime={item.data.date.toISOString().slice(0, 10)}>{issueDate(item.data.date)}</time>
-                  </span>
-                  <strong>{item.data.title}</strong>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </dialog>
-
-    <CoverLightbox />
-
     <script>
-      const dialog = document.querySelector<HTMLDialogElement>('[data-issue-dialog]');
-      const closeButton = dialog?.querySelector<HTMLButtonElement>('[data-issue-dialog-close]');
-      const currentItem = dialog?.querySelector<HTMLElement>('[aria-current="page"]');
-      let restoreOverflow = '';
-      let closing = false;
-
-      const closeDialog = () => {
-        if (!dialog?.open || closing) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          dialog.close();
-          return;
+      const runWeeklyCoverEntrance = () => {
+        const target = document.querySelector<HTMLImageElement>('[data-weekly-cover-target]');
+        const entranceItems = Array.from(document.querySelectorAll<HTMLElement>('[data-weekly-entrance]'));
+        const rawOrigin = sessionStorage.getItem('weekly-cover-origin');
+        if (!target || !rawOrigin) return;
+        sessionStorage.removeItem('weekly-cover-origin');
+        try {
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            sessionStorage.removeItem('weekly-cover-origin');
+            return;
+          }
+          const origin = JSON.parse(rawOrigin) as { top: number; left: number; width: number; height: number };
+          const rect = target.getBoundingClientRect();
+          const scaleX = origin.width / rect.width;
+          const scaleY = origin.height / rect.height;
+          target.style.opacity = '0';
+          target.animate([
+            { opacity: 0.86, transformOrigin: 'top left', transform: `translate(${origin.left - rect.left}px, ${origin.top - rect.top}px) scale(${scaleX}, ${scaleY})` },
+            { opacity: 1, transformOrigin: 'top left', transform: 'translate(0, 0) scale(1)' },
+          ], { duration: 820, easing: 'cubic-bezier(0.19, 1, 0.22, 1)', fill: 'both' });
+          entranceItems.forEach((item, index) => {
+            item.animate([
+              { opacity: 0, transform: 'translateY(20px)' },
+              { opacity: 1, transform: 'translateY(0)' },
+            ], { duration: 620, delay: 260 + index * 110, easing: 'cubic-bezier(0.19, 1, 0.22, 1)', fill: 'both' });
+          });
+        } catch {
+          sessionStorage.removeItem('weekly-cover-origin');
         }
-        closing = true;
-        const finish = () => {
-          closing = false;
-          if (dialog.open) dialog.close();
-        };
-        dialog.classList.add('isClosing');
-        dialog.addEventListener('animationend', finish, { once: true });
-        window.setTimeout(finish, 420);
       };
-
-      document.querySelectorAll<HTMLButtonElement>('[data-open-issue-nav]').forEach((trigger) => {
-        trigger.addEventListener('click', () => {
-          if (!dialog || dialog.open) return;
-          restoreOverflow = document.documentElement.style.overflow;
-          dialog.showModal();
-          document.documentElement.style.overflow = 'hidden';
-          currentItem?.scrollIntoView({ block: 'center' });
-        });
-      });
-
-      closeButton?.addEventListener('click', closeDialog);
-      dialog?.addEventListener('cancel', (event) => {
-        event.preventDefault();
-        closeDialog();
-      });
-      dialog?.addEventListener('click', (event) => {
-        if (event.target === dialog) closeDialog();
-      });
-      dialog?.addEventListener('close', () => {
-        dialog.classList.remove('isClosing');
-        document.documentElement.style.overflow = restoreOverflow;
-      });
+      document.addEventListener('astro:page-load', runWeeklyCoverEntrance);
+      runWeeklyCoverEntrance();
     </script>
   </body>
 </html>
 
 <style>
-  .issueColumn { max-width: 1080px; }
+  .weeklyReader { max-width: 1360px; --reader-text: oklch(0.79 0.006 90); }
 
-  .backLink {
+  @media (min-width: 1200px) {
+    .weeklyReader main {
+      margin-left: 272px;
+      padding-right: clamp(0px, calc((100vw - 1200px) * 0.4), 160px);
+    }
+  }
+
+  .weeklyArticle {
+    max-width: 800px;
+    margin: calc(clamp(28px, 5vh, 56px) + 36px) auto 0;
+    padding: 36px 0 10vh;
+  }
+  .articleHeader { padding-bottom: 28px; }
+  .homeLink {
     display: inline-flex;
-    gap: 10px;
-    margin-top: clamp(70px, 11vh, 120px);
-    color: var(--text-muted);
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    text-decoration: none;
-  }
-  .backLink:hover { color: var(--ink); }
-
-  .issueHeading { padding: 30px 0 clamp(48px, 8vh, 78px); }
-
-  .headingMeta {
-    display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 14px 24px;
-    color: var(--text-muted);
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.14em;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    transition: color 0.35s var(--ease-out), transform 0.35s var(--ease-out);
   }
-  .headingMeta span:first-child { color: var(--ink); }
-  .headingMeta span:last-child {
-    padding-left: 24px;
-    border-left: 1px solid var(--hairline);
-    color: var(--signal);
-  }
-
-  h1 {
-    max-width: 16ch;
-    margin: 26px 0 0;
-    font-size: clamp(56px, 8.6vw, 116px);
+  .homeLink:hover { color: var(--ink); transform: translateX(-3px); }
+  .homeLink:focus-visible { outline-offset: 5px; }
+  .homeLinkIcon { width: 17px; height: 17px; }
+  .articleHeader h1 {
+    max-width: 100%;
+    margin: 22px 0 0;
+    font-size: clamp(32px, 4.5vw, 48px);
     font-weight: 700;
-    line-height: 0.9;
-    letter-spacing: -0.07em;
+    line-height: 0.95;
+    letter-spacing: -0.065em;
     overflow-wrap: anywhere;
   }
-
-  .dek {
-    max-width: 44ch;
-    margin: 30px 0 0;
-    color: var(--text-secondary);
+  .articleSummary {
+    max-width: 75ch;
+    margin: 0 0 32px;
+    color: var(--reader-text);
     font-size: 16px;
     line-height: 1.85;
   }
 
-  .headingTags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 28px 0 0;
-    padding: 0;
-    list-style: none;
+  .articleCover {
+    margin: 0 0 20px;
   }
-  .headingTags li {
-    padding: 7px 12px;
-    border: 1px solid var(--hairline);
-    border-radius: 999px;
-    color: var(--text-muted);
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-  }
-
-  .issueBody {
-    display: grid;
-    grid-template-columns: 336px minmax(0, 1fr);
-    gap: clamp(44px, 6vw, 84px);
-    align-items: stretch;
-    padding-bottom: 8vh;
-  }
-
-  .asideSticky {
-    position: sticky;
-    top: clamp(28px, 7vh, 72px);
-  }
-
-  .asideCover {
+  .articleCover img {
     display: block;
     width: 100%;
-    padding: 0;
-    overflow: hidden;
-    border: 1px solid var(--hairline);
-    border-radius: 6px;
-    background: var(--surface);
-    box-shadow: 0 34px 60px -46px var(--shadow);
-    cursor: pointer;
-    aspect-ratio: 3 / 2;
-    transform: rotate(-1deg);
-    transition: transform 0.7s var(--ease-out), border-color 0.6s var(--ease-out);
-  }
-  .asideCover img {
-    display: block;
-    width: 100%;
-    height: 100%;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
-    transition: transform 1s var(--ease-out);
-  }
-
-  .switchButton {
-    display: flex;
-    width: 100%;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 20px;
-    padding: 15px 18px;
     border: 1px solid var(--hairline);
-    border-radius: 4px;
-    background: transparent;
-    color: var(--ink);
-    cursor: pointer;
-    font-size: 13px;
-    letter-spacing: 0.08em;
-    transition: background 0.45s var(--ease-out), border-color 0.45s var(--ease-out);
-  }
-  .switchButton b {
-    color: var(--signal);
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 10px;
-    font-weight: 400;
-    letter-spacing: 0.12em;
+    border-radius: 14px;
   }
 
-  .asidePager {
-    display: grid;
-    gap: 2px;
-    margin-top: 34px;
-    border-top: 1px solid var(--hairline);
-  }
-  .asidePager a {
-    display: grid;
-    gap: 6px;
-    padding: 15px 2px;
-    border-bottom: 1px solid var(--hairline);
-    text-decoration: none;
-  }
-  .asidePager a span {
-    color: var(--text-muted);
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 9px;
-    letter-spacing: 0.14em;
-  }
-  .asidePager a strong {
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.5;
-    transition: color 0.4s var(--ease-out);
-  }
-  .asidePager a:hover strong { color: var(--ink); }
-  .asideEmpty {
-    padding: 15px 2px;
-    border-bottom: 1px solid var(--hairline);
-    color: var(--text-muted);
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 9px;
-    letter-spacing: 0.12em;
-  }
-
-  .issueContent {
-    min-width: 0;
-    max-width: 70ch;
-    color: var(--text-secondary);
-    font-size: 16.5px;
+  .markdownContent {
+    max-width: min(100%, 75ch);
+    color: var(--reader-text);
+    font-size: 17px;
     line-height: 1.95;
   }
-  .issueContent :global(p) { margin: 0 0 1.35em; }
-  .issueContent :global(p:first-child) { color: var(--ink); font-size: 18px; line-height: 1.85; }
-  .issueContent :global(h2) {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin: 2.6em 0 1.1em;
-    padding-top: 1.4em;
-    border-top: 1px solid var(--hairline);
+  .markdownContent :global(p) { margin: 0 0 1.35em; }
+  .markdownContent :global(h2) {
+    margin: 2em 0 0.8em;
+    padding-top: 1em;
+    border-top: 1px solid color-mix(in oklch, var(--hairline) 70%, transparent);
     color: var(--ink);
-    font-size: clamp(28px, 3.4vw, 40px);
-    font-weight: 700;
-    line-height: 1.05;
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.1;
     letter-spacing: -0.045em;
   }
-  .issueContent :global(h2)::before {
-    flex: none;
-    width: 26px;
-    height: 1px;
-    background: var(--highlight);
-    content: '';
-  }
-  .issueContent :global(h2:first-child) { margin-top: 0; padding-top: 0; border-top: 0; }
-  .issueContent :global(h3) {
-    margin: 2.2em 0 0.5em;
+  .markdownContent :global(h3) {
+    margin: 1.5em 0 0.4em;
     color: var(--ink);
-    font-size: 20px;
-    font-weight: 600;
-    line-height: 1.45;
-    letter-spacing: -0.02em;
+    font-size: 21px;
+    line-height: 1.4;
   }
-  .issueContent :global(h3) + :global(p) { margin-bottom: 0.9em; }
-  .issueContent :global(a) {
-    text-decoration-color: var(--highlight);
-    text-decoration-thickness: 0.2em;
-    text-underline-offset: 0.14em;
-  }
-  .issueContent :global(h3) + :global(p) a {
+  .markdownContent :global(a) {
     color: var(--signal);
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 12px;
-    letter-spacing: 0.02em;
-    overflow-wrap: anywhere;
+    text-decoration-color: var(--highlight);
+    text-underline-offset: 0.18em;
   }
-  .issueContent :global(h3) + :global(p) a:hover { text-decoration: underline; text-decoration-thickness: 0.1em; }
-  .issueContent :global(img) {
+  .markdownContent :global(img),
+  .markdownContent :global(video) {
     display: block;
     width: 100%;
     height: auto;
-    margin: 1.8em 0;
+    margin: 2em 0;
     border: 1px solid var(--hairline);
-    border-radius: 4px;
-    background: var(--surface);
+    border-radius: 3px;
   }
-  .issueContent :global(blockquote) {
-    margin: 1.8em 0;
-    padding: 2px 0 2px 22px;
-    border-left: 2px solid var(--highlight);
+  .markdownContent :global(blockquote) {
+    margin: 2em 0;
+    padding: 2px 0 2px 20px;
+    border-left: 1px solid var(--highlight);
     color: var(--text-secondary);
   }
-  .issueContent :global(blockquote) :global(p):last-child { margin-bottom: 0; }
-  .issueContent :global(hr) { margin: 2.6em 0; border: 0; border-top: 1px solid var(--hairline); }
-  .issueContent :global(ul),
-  .issueContent :global(ol) { margin: 0 0 1.35em; padding-left: 1.3em; }
-  .issueContent :global(li) { margin: 0.4em 0; }
-  .issueContent :global(li)::marker { color: var(--text-muted); }
-  .issueContent :global(code) {
-    padding: 2px 6px;
+  .markdownContent :global(ul),
+  .markdownContent :global(ol) { margin: 0 0 1.35em; padding-left: 1.4em; }
+  .markdownContent :global(li) { margin: 0.4em 0; }
+  .markdownContent :global(li)::marker { color: var(--highlight); }
+  .markdownContent :global(hr) { margin: 2.8em 0; border: 0; border-top: 1px solid var(--hairline); }
+  .markdownContent :global(code) {
+    padding: 2px 5px;
     background: var(--surface);
     font-family: ui-monospace, 'SF Mono', Menlo, monospace;
     font-size: 0.88em;
   }
-  .issueContent :global(pre) {
-    margin: 1.8em 0;
-    padding: 20px;
+  .markdownContent :global(pre) {
+    margin: 2em 0;
+    padding: 18px;
     overflow-x: auto;
     border: 1px solid var(--hairline);
-    background: oklch(0.13 0.025 255);
+    background: var(--surface);
     font-size: 13px;
     line-height: 1.65;
   }
-  .issueContent :global(pre) :global(code) { padding: 0; background: transparent; }
-  .issueContent :global(em) { color: var(--text-muted); font-size: 0.92em; }
-  .issueContent :global(table) { width: 100%; margin: 1.8em 0; border-collapse: collapse; font-size: 14px; }
-  .issueContent :global(th),
-  .issueContent :global(td) { padding: 10px 12px; border-bottom: 1px solid var(--hairline); text-align: left; }
-
-  .issuePager {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1px;
-    margin-bottom: 6vh;
-    background: var(--hairline);
-  }
-  .pagerBlock {
-    display: grid;
-    gap: 14px;
-    align-content: start;
-    padding: 34px 30px 38px;
-    background: var(--canvas);
-    text-decoration: none;
-    transition: background 0.5s var(--ease-out);
-  }
-  .pagerBlock > span {
-    color: var(--text-muted);
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.14em;
-  }
-  .pagerBlock strong {
-    color: var(--ink);
-    font-size: clamp(21px, 2.6vw, 28px);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.04em;
-  }
-  .pagerBlock b { color: var(--highlight); font-size: 20px; font-weight: 400; }
-  .pagerNext { justify-items: end; text-align: right; }
-  .pagerBlock.isDisabled strong { color: var(--text-muted); font-weight: 400; }
-  .pagerBlock.isDisabled { cursor: default; }
-
-  .issueFab {
-    position: fixed;
-    right: 18px;
-    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-    z-index: 12;
-    display: none;
-    align-items: center;
-    gap: 8px;
-    padding: 13px 18px;
-    border: 1px solid var(--hairline);
-    border-radius: 999px;
-    background: var(--surface-raised);
-    color: var(--ink);
-    box-shadow: 0 20px 40px -22px var(--shadow);
-    cursor: pointer;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-  }
-  .issueFab span { color: var(--signal); font-size: 13px; }
-
-  .issueDialog {
-    width: min(880px, calc(100vw - 48px));
-    max-width: none;
-    max-height: min(84vh, 780px);
-    padding: 0;
-    overflow: hidden;
-    border: 1px solid var(--hairline);
-    border-radius: 8px;
-    background: var(--surface-raised);
-    color: var(--ink);
-    box-shadow: 0 60px 120px -60px oklch(0.05 0.02 265 / 0.9);
-  }
-  .issueDialog[open] { display: block; animation: dialogIn 0.5s var(--ease-out) both; }
-  .issueDialog.isClosing { animation: dialogOut 0.28s ease-in both; }
-  .issueDialog::backdrop { background: oklch(0.1 0.02 255 / 0.82); animation: backdropIn 0.4s var(--ease-out) both; }
-  .issueDialog.isClosing::backdrop { animation: backdropOut 0.28s ease-in both; }
-
-  @keyframes sheetIn { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: none; } }
-  @keyframes sheetOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(100%); } }
-  @keyframes dialogIn { from { opacity: 0; transform: translateY(20px) scale(0.985); } to { opacity: 1; transform: none; } }
-  @keyframes dialogOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(14px) scale(0.99); } }
-  @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes backdropOut { from { opacity: 1; } to { opacity: 0; } }
-
-  .dialogInner { display: flex; max-height: inherit; flex-direction: column; }
-
-  .dialogHead {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
-    padding: 28px 32px 22px;
-    border-bottom: 1px solid var(--hairline);
-  }
-  .dialogKicker {
-    margin: 0 0 10px;
-    color: var(--text-muted);
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.16em;
-  }
-  .dialogHead h2 {
-    margin: 0;
-    font-size: clamp(28px, 3.4vw, 38px);
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.045em;
-  }
-  .dialogClose {
-    width: 40px;
-    height: 40px;
-    flex: none;
-    border: 1px solid var(--hairline);
-    border-radius: 50%;
-    background: transparent;
-    color: var(--ink);
-    cursor: pointer;
-    font-size: 22px;
-    line-height: 1;
-    transition: background 0.4s var(--ease-out), transform 0.5s var(--ease-out);
-  }
-
-  .dialogList {
-    display: grid;
-    min-height: 0;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: 0;
-    padding: 0;
-    overflow-y: auto;
-    list-style: none;
-    overscroll-behavior: contain;
-  }
-  .dialogList li { border-bottom: 1px solid var(--hairline); }
-  .dialogList li:nth-child(odd) { border-right: 1px solid var(--hairline); }
-  .dialogItem {
-    display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
-    align-items: center;
-    gap: 18px;
-    height: 100%;
-    padding: 18px 22px;
-    background: var(--surface-raised);
-    color: inherit;
-    text-decoration: none;
-    transition: background 0.4s var(--ease-out);
-  }
-  .dialogCover {
-    display: block;
-    overflow: hidden;
-    border: 1px solid var(--hairline);
-    background: var(--surface);
-    aspect-ratio: 3 / 2;
-  }
-  .dialogCover img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .dialogText { display: grid; min-width: 0; gap: 8px; }
-  .dialogMeta {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    color: var(--text-muted);
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 9px;
-    letter-spacing: 0.12em;
-  }
-  .dialogMeta b { color: var(--signal); font-weight: 400; }
-  .dialogText strong {
-    color: var(--text-secondary);
-    font-size: 17px;
-    font-weight: 600;
-    line-height: 1.3;
-    letter-spacing: -0.025em;
-    transition: color 0.4s var(--ease-out);
-  }
-  .dialogItem[aria-current='page'] { background: var(--highlight-soft); }
-  .dialogItem[aria-current='page'] strong { color: var(--ink); }
-  .dialogItem[aria-current='page'] .dialogCover { border-color: var(--highlight); }
-
-  @media (hover: hover) and (pointer: fine) {
-    .asideCover:hover { border-color: oklch(0.48 0.11 250); transform: rotate(0deg) scale(1.015); }
-    .switchButton:hover { border-color: var(--highlight); background: var(--highlight-soft); }
-    .pagerBlock:not(.isDisabled):hover { background: oklch(0.17 0.038 267 / 0.7); }
-    .dialogClose:hover { background: var(--highlight-soft); transform: rotate(90deg); }
-    .dialogItem:hover { background: oklch(0.2 0.042 266); }
-    .dialogItem:hover strong { color: var(--ink); }
-  }
-
-  @media (max-width: 1000px) {
-    .issueBody { grid-template-columns: 264px minmax(0, 1fr); gap: 44px; }
-  }
-
-  @media (max-width: 820px) {
-    .issueBody { grid-template-columns: 1fr; gap: 44px; }
-    .asideSticky { position: static; display: grid; gap: 22px; }
-    .asidePager { display: none; }
-    .issueFab { display: inline-flex; }
-  }
+  .markdownContent :global(pre code) { padding: 0; background: transparent; }
 
   @media (max-width: 700px) {
-    .backLink { margin-top: 58px; }
-    h1 { max-width: none; margin-top: 22px; font-size: clamp(44px, 14vw, 74px); }
-    .dek { margin-top: 24px; font-size: 15px; }
-    .issueHeading { padding-bottom: 40px; }
-    .issueContent { font-size: 16px; line-height: 1.9; }
-    .issueContent :global(p:first-child) { font-size: 17px; }
-    .issueContent :global(h2) { margin-top: 2.2em; font-size: 28px; }
-
-    .issuePager { grid-template-columns: 1fr; }
-    .pagerBlock { padding: 26px 20px 30px; }
-    .pagerNext { justify-items: start; text-align: left; }
-
-    .issueDialog {
-      width: 100%;
-      max-width: none;
-      max-height: 84vh;
-      margin: auto 0 0;
-      border-radius: 14px 14px 0 0;
+    .weeklyArticle {
+      margin-top: 68px;
+      padding-top: 32px;
     }
-    .issueDialog[open] { animation: sheetIn 0.45s var(--ease-out) both; }
-    .issueDialog.isClosing { animation: sheetOut 0.26s ease-in both; }
-
-    .dialogHead { padding: 22px 20px 18px; }
-    .dialogList { grid-template-columns: 1fr; }
-    .dialogList li:nth-child(odd) { border-right: 0; }
-    .dialogItem { grid-template-columns: 84px minmax(0, 1fr); padding: 14px 20px; }
+    .articleHeader { padding-bottom: 24px; }
+    .articleCover { margin-bottom: 24px; }
+    .articleSummary { margin-bottom: 48px; }
+    .markdownContent { font-size: 16px; }
   }
 </style>

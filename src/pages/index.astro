@@ -1,7 +1,7 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import SiteBackdrop from '../components/home/SiteBackdrop.astro';
-import SiteHeader from '../components/home/SiteHeader.astro';
 import Hero from '../components/home/Hero.astro';
 import GardenTabs from '../components/home/GardenTabs.astro';
 import Elsewhere from '../components/home/Elsewhere.astro';
@@ -17,14 +17,14 @@ const year = new Date().getFullYear();
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0c1426" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2238%22 fill=%22%235d6ff2%22 stroke=%22%23d9f5ff%22 stroke-width=%226%22/><path d=%22M50 24c5-13 17-19 28-15-2 13-12 22-28 15Z%22 fill=%22%230c1426%22 stroke=%22%23d9f5ff%22 stroke-width=%225%22/></svg>" />
+    <meta name="theme-color" content="#111111" />
+    <ClientRouter />
+    <link rel="icon" href="/favicon-cat.png?v=2" type="image/png" />
     <title>{title}</title>
   </head>
   <body>
     <SiteBackdrop />
     <div class="site-column">
-      <SiteHeader />
       <main>
         <Hero />
         <GardenTabs />
@@ -32,7 +32,6 @@ const year = new Date().getFullYear();
       </main>
       <footer>
         <span>© {year} OPPENHEIMOR®</span>
-        <span>STILL GROWING</span>
       </footer>
     </div>
 

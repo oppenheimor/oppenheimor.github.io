@@ -1,51 +1,65 @@
-/* Phosphor Duotone, 32px. Hotspots: arrow tip 4,4; fingertip 15,2; lens center 14,14. */
-:root {
-  --cursor-arrow: url('/cursors/arrow.svg') 4 4, auto;
-  --cursor-action: url('/cursors/hand.svg') 15 2, pointer;
-  --cursor-action-down: url('/cursors/hand-pressed.svg') 15 2, pointer;
-  --cursor-zoom: url('/cursors/zoom.svg') 14 14, zoom-in;
+/* Circular cursor inspired by the reticle treatment in mobileweb-openmirror-1028-poster. */
+.global-cursor { display: none; }
+
+@media (any-hover: hover) and (any-pointer: fine) and (forced-colors: none) and (prefers-reduced-motion: no-preference) {
+  html[data-custom-cursor],
+  html[data-custom-cursor] * { cursor: none !important; }
+
+  .global-cursor {
+    --cursor-x: -100px;
+    --cursor-y: -100px;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    display: block;
+    width: 36px;
+    height: 36px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(var(--cursor-x), var(--cursor-y), 0) translate(-50%, -50%);
+    transition: opacity .18s ease-out;
+    mix-blend-mode: difference;
+  }
+
+  .global-cursor.is-on { opacity: 1; }
+
+  .global-cursor__ring {
+    position: absolute;
+    inset: 2px;
+    border: 1px solid oklch(0.94 0.02 245);
+    border-radius: 50%;
+    transition: inset .28s cubic-bezier(0.19, 1, 0.22, 1), background-color .2s ease;
+  }
+
+  .global-cursor__dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: oklch(0.94 0.02 245);
+    transform: translate(-50%, -50%);
+    transition: transform .28s cubic-bezier(0.19, 1, 0.22, 1), background-color .2s ease;
+  }
+
+  .global-cursor.is-hot .global-cursor__ring {
+    inset: -5px;
+    background: transparent;
+  }
+
+  .global-cursor.is-hot .global-cursor__dot { transform: translate(-50%, -50%) scale(.7); }
+  html[data-cursor-pressed] .global-cursor__ring { inset: 0; }
+  html[data-cursor-pressed] .global-cursor__dot { transform: translate(-50%, -50%) scale(1.35); }
+
+  /* Keep editing and native drag affordances intact. */
+  html[data-custom-cursor] :is(textarea, input:not([type]), input[type='text'], input[type='search'], input[type='email'], input[type='url'], input[type='password'], input[type='tel'], input[type='number'], [contenteditable='true']) {
+    cursor: text !important;
+  }
+  html[data-custom-cursor] :is([draggable='true'], input[type='range'], [role='slider'], [role='separator']) { cursor: revert !important; }
 }
 
-@media (any-hover: hover) and (any-pointer: fine) and (forced-colors: none) {
-  html[data-custom-cursor]:not([data-cursor-native]) {
-    cursor: var(--cursor-arrow);
-    --cursor-interactive: var(--cursor-action);
-  }
-
-  /* Text stays selectable; controls retain their familiar editing affordance. */
-  html[data-custom-cursor]:not([data-cursor-native]) :where(p, h1, h2, h3, h4, h5, h6, li, dt, dd, blockquote, pre, code, td, th) {
-    cursor: text;
-  }
-
-  html[data-custom-cursor]:not([data-cursor-native]) :is(a[href], button, summary, [role='button'], [role='tab'], input[type='button'], input[type='submit'], input[type='reset'], input[type='checkbox'], input[type='radio'], select, label[for]) {
-    cursor: var(--cursor-interactive);
-  }
-  html[data-custom-cursor]:not([data-cursor-native]) :is(a[href], button, summary, [role='button'], [role='tab']) * {
-    cursor: inherit;
-  }
-
-  /* Never replace resize/grab cursors or editable-field cursors with a link shape. */
-  html[data-custom-cursor]:not([data-cursor-native]) :is(textarea, input:not([type]), input[type='text'], input[type='search'], input[type='email'], input[type='url'], input[type='password'], input[type='tel'], input[type='number'], [contenteditable]:not([contenteditable='false'])) {
-    cursor: auto;
-  }
-  html[data-custom-cursor]:not([data-cursor-native]) [contenteditable]:not([contenteditable='false']) * { cursor: auto; }
-  html[data-custom-cursor]:not([data-cursor-native]) :is([draggable='true'], [draggable='true'] *, input[type='range'], [role='slider'], [role='separator']) { cursor: revert; }
-  html[data-custom-cursor]:not([data-cursor-native]) :is(:disabled, [aria-disabled='true'], [aria-disabled='true'] *) { cursor: not-allowed; }
-}
-
-/* Preview is a different action from navigation, even with custom cursors enabled. */
-button[data-cover-preview], button[data-cover-preview] * {
-  cursor: zoom-in;
-}
-@media (any-hover: hover) and (any-pointer: fine) and (forced-colors: none) {
-  html[data-custom-cursor]:not([data-cursor-native]) button[data-cover-preview],
-  html[data-custom-cursor]:not([data-cursor-native]) button[data-cover-preview] * {
-    cursor: var(--cursor-zoom);
-  }
-}
-
-@media (any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) and (forced-colors: none) {
-  html[data-custom-cursor][data-cursor-pressed]:not([data-cursor-native]) {
-    --cursor-interactive: var(--cursor-action-down);
-  }
+@media (forced-colors: active), (prefers-reduced-motion: reduce), (any-hover: none), (any-pointer: coarse) {
+  .global-cursor { display: none !important; }
 }

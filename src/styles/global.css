@@ -1,16 +1,24 @@
+@font-face {
+  font-family: "YeZiGongChangXiaoShiTou";
+  src: url('/fonts/YeZiGongChangXiaoShiTou.ttf') format('truetype');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
 :root {
-  --canvas: oklch(0.125 0.032 264);
-  --surface: oklch(0.17 0.038 267);
-  --surface-raised: oklch(0.215 0.047 264);
-  --ink: oklch(0.93 0.018 245);
-  --text-secondary: oklch(0.72 0.034 247);
-  --text-muted: oklch(0.56 0.032 250);
-  --hairline: oklch(0.3 0.044 262);
-  --highlight: oklch(0.64 0.17 263);
-  --highlight-soft: oklch(0.23 0.075 268);
-  --signal: oklch(0.79 0.105 205);
-  --signal-soft: oklch(0.24 0.045 210);
-  --shadow: oklch(0.045 0.026 267 / 0.76);
+  --canvas: oklch(0.125 0.004 90);
+  --surface: oklch(0.17 0.005 90);
+  --surface-raised: oklch(0.215 0.006 90);
+  --ink: oklch(0.93 0.004 90);
+  --text-secondary: oklch(0.72 0.006 90);
+  --text-muted: oklch(0.56 0.006 90);
+  --hairline: oklch(0.3 0.006 90);
+  --highlight: oklch(0.72 0.008 90);
+  --highlight-soft: oklch(0.23 0.007 90);
+  --signal: oklch(0.8 0.006 90);
+  --signal-soft: oklch(0.24 0.006 90);
+  --shadow: oklch(0.045 0.003 90 / 0.76);
   --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
   color-scheme: dark;
   font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
@@ -58,7 +66,7 @@ a:focus-visible {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 820px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 0 32px;
 }

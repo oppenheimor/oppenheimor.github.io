@@ -2,42 +2,53 @@
 import '../styles/cursor.css';
 ---
 
+<div class="global-cursor" aria-hidden="true">
+  <span class="global-cursor__ring"></span>
+  <span class="global-cursor__dot"></span>
+</div>
+
 <script>
-  // Native cursor images keep the OS hotspot precise, with no tracking overlay.
+  // A small reticle follows the pointer and expands into a circle over controls.
   const root = document.documentElement;
+  const getCursor = () => document.querySelector<HTMLElement>('.global-cursor');
   const mouse = matchMedia('(any-hover: hover) and (any-pointer: fine)');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const contrast = matchMedia('(forced-colors: active)');
+  const interactive = 'a[href], button, summary, [role="button"], [role="tab"], input, select, textarea, label[for]';
 
   const reset = () => {
+    root.removeAttribute('data-custom-cursor');
     root.removeAttribute('data-cursor-pressed');
-    root.removeAttribute('data-cursor-native');
+    getCursor()?.classList.remove('is-on', 'is-hot');
   };
   const sync = () => {
-    root.toggleAttribute('data-custom-cursor', mouse.matches && !contrast.matches);
-    reset();
+    const enabled = mouse.matches && !contrast.matches && !reduced.matches;
+    root.toggleAttribute('data-custom-cursor', enabled);
+    if (!enabled) reset();
   };
+  const onMove = (event: PointerEvent) => {
+    if (!root.hasAttribute('data-custom-cursor') || event.pointerType !== 'mouse') return;
+    const cursor = getCursor();
+    cursor?.style.setProperty('--cursor-x', `${event.clientX}px`);
+    cursor?.style.setProperty('--cursor-y', `${event.clientY}px`);
+    cursor?.classList.add('is-on');
+    const target = event.target;
+    cursor?.classList.toggle('is-hot', target instanceof Element && Boolean(target.closest(interactive)));
+  };
+
   sync();
   mouse.addEventListener('change', sync);
   contrast.addEventListener('change', sync);
-  reduced.addEventListener('change', reset);
-
-  document.addEventListener('pointerover', (event) => {
-    root.toggleAttribute('data-custom-cursor', event.pointerType === 'mouse' && mouse.matches && !contrast.matches);
-  }, { passive: true });
+  reduced.addEventListener('change', sync);
+  document.addEventListener('pointermove', onMove, { passive: true });
+  document.addEventListener('pointerleave', () => getCursor()?.classList.remove('is-on'));
+  document.addEventListener('astro:page-load', sync);
   document.addEventListener('pointerdown', (event) => {
-    const enabled = event.pointerType === 'mouse' && mouse.matches && !contrast.matches;
-    root.toggleAttribute('data-custom-cursor', enabled);
-    if (enabled && event.button === 0 && !reduced.matches) root.setAttribute('data-cursor-pressed', '');
+    if (event.pointerType === 'mouse' && event.button === 0 && root.hasAttribute('data-custom-cursor')) {
+      root.setAttribute('data-cursor-pressed', '');
+    }
   }, { passive: true });
-  window.addEventListener('pointerup', reset, { passive: true });
-  window.addEventListener('pointercancel', reset, { passive: true });
+  window.addEventListener('pointerup', () => root.removeAttribute('data-cursor-pressed'), { passive: true });
   window.addEventListener('blur', reset);
   document.addEventListener('visibilitychange', reset);
-  document.addEventListener('dragstart', () => {
-    reset();
-    root.setAttribute('data-cursor-native', '');
-  });
-  document.addEventListener('dragend', reset);
-  document.addEventListener('drop', reset);
 </script>

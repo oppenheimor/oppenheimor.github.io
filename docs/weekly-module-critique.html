@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>周刊潮汐轮播设计</title>
+  <style>
+    :root {
+      --canvas: oklch(0.125 0.032 264);
+      --surface: oklch(0.17 0.038 267);
+      --surface-raised: oklch(0.215 0.047 264);
+      --ink: oklch(0.93 0.018 245);
+      --secondary: oklch(0.72 0.034 247);
+      --muted: oklch(0.56 0.032 250);
+      --hairline: oklch(0.3 0.044 262);
+      --highlight: oklch(0.64 0.17 263);
+      --highlight-soft: oklch(0.23 0.075 268);
+      --signal: oklch(0.79 0.105 205);
+      --signal-soft: oklch(0.24 0.045 210);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--canvas); color: var(--ink); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Helvetica Neue, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        linear-gradient(color-mix(in oklch, var(--hairline) 25%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in oklch, var(--hairline) 25%, transparent) 1px, transparent 1px),
+        var(--canvas);
+      background-size: 48px 48px;
+    }
+    .wrap { width: min(1180px, calc(100% - 40px)); margin: auto; padding: 68px 0 100px; }
+    .eyebrow, .mono { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .14em; }
+    .eyebrow { color: var(--signal); text-transform: uppercase; }
+    h1 { max-width: 900px; margin: 14px 0 12px; font-size: clamp(42px, 7vw, 88px); line-height: .94; letter-spacing: -.07em; }
+    .intro { max-width: 670px; margin: 0 0 60px; color: var(--secondary); font-size: 16px; line-height: 1.7; }
+    section { margin-top: 72px; }
+    .section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 24px; }
+    h2 { margin: 0; font-size: 22px; letter-spacing: -.03em; }
+    .note { color: var(--muted); font-size: 13px; }
+
+    .current { position: relative; overflow: hidden; border: 1px solid var(--hairline); }
+    .current img { display: block; width: 100%; }
+    .current .focus { position: absolute; left: 8%; right: 8%; top: 49%; height: 29%; border: 1px solid var(--signal); opacity: .7; }
+    .marker { position: absolute; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--highlight); color: var(--ink); font-weight: 800; }
+    .m1 { left: 33%; top: 53%; } .m2 { left: 42%; top: 57%; } .m3 { left: 42%; top: 75%; }
+    .diagnosis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+    .diagnosis article { padding: 18px; border: 1px solid var(--hairline); background: var(--surface); }
+    .diagnosis .num { color: var(--signal); font: 700 12px ui-monospace, monospace; }
+    .diagnosis h3 { margin: 10px 0 7px; font-size: 16px; }
+    .diagnosis p { margin: 0; color: var(--secondary); font-size: 13px; line-height: 1.6; }
+
+    .design-card { overflow: hidden; border: 1px solid var(--hairline); background: var(--surface); }
+    .design-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 24px; border-bottom: 1px solid var(--hairline); }
+    .design-head h3 { margin: 0; font-size: 20px; }
+    .design-head p { max-width: 510px; margin: 0; color: var(--secondary); font-size: 13px; line-height: 1.6; }
+
+    .stage { position: relative; min-height: 535px; overflow: hidden; background: var(--canvas); }
+    .stage-grid { position: absolute; inset: 0; opacity: .42; background: linear-gradient(color-mix(in oklch, var(--hairline) 24%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklch, var(--hairline) 24%, transparent) 1px, transparent 1px); background-size: 48px 48px; }
+    .stage-wave { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .stage-wave path { fill: var(--highlight-soft); }
+    .stage-wave path.wave-2 { fill: color-mix(in oklch, var(--highlight) 23%, transparent); }
+    .stage-wave path.wave-3 { fill: color-mix(in oklch, var(--signal) 12%, transparent); }
+    .stage-label { position: absolute; top: 34px; left: 42px; z-index: 2; color: var(--signal); }
+    .stage-label span { display: block; margin-top: 8px; color: var(--muted); letter-spacing: .06em; }
+    .stage-title { position: absolute; left: 42px; bottom: 154px; z-index: 2; max-width: 240px; font-size: clamp(40px, 5vw, 66px); line-height: .92; letter-spacing: -.08em; }
+    .stage-title::after { content: ""; display: block; width: 70px; height: 7px; margin-top: 18px; background: var(--highlight); }
+    .stage-arrows { position: absolute; left: 42px; bottom: 72px; z-index: 4; display: flex; gap: 9px; }
+    .arrow { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--ink); border-radius: 50%; color: var(--ink); font-size: 21px; line-height: 1; }
+    .arrow.active { border-color: var(--ink); background: var(--ink); color: var(--canvas); }
+    .carousel-track { position: absolute; right: -42px; bottom: 117px; z-index: 3; display: flex; align-items: end; gap: 18px; }
+    .issue-card { position: relative; width: 346px; overflow: hidden; border: 1px solid color-mix(in oklch, var(--ink) 54%, var(--hairline)); border-radius: 18px; background: var(--surface-raised); box-shadow: 0 24px 50px oklch(0.04 0.026 267 / .35); }
+    .issue-card.active { transform: translateY(-28px); }
+    .issue-card.peek { width: 185px; opacity: .42; transform: translateY(-4px) scale(.94); }
+    .issue-cover { height: 216px; overflow: hidden; background: var(--surface); }
+    .issue-cover img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(.82) contrast(1.05); }
+    .issue-info { padding: 18px 20px 20px; }
+    .issue-info .top { display: flex; justify-content: space-between; gap: 14px; color: var(--muted); font-size: 10px; }
+    .issue-info h4 { margin: 15px 0 9px; font-size: 28px; line-height: 1; letter-spacing: -.06em; }
+    .issue-info p { margin: 0; color: var(--secondary); font-size: 12px; line-height: 1.65; }
+    .issue-info a { display: inline-block; margin-top: 15px; color: var(--ink); text-decoration: none; font-size: 12px; }
+    .issue-info a::after { content: "  →"; color: var(--signal); }
+    .peek .issue-cover { height: 156px; }
+    .peek .issue-info { min-height: 70px; padding: 14px; }
+    .peek .issue-info p, .peek .issue-info a { display: none; }
+    .peek .issue-info h4 { margin: 10px 0 0; color: var(--muted); font-size: 18px; }
+
+    .timeline { position: absolute; right: 42px; bottom: 48px; left: 42px; z-index: 2; height: 32px; }
+    .timeline::before { content: ""; position: absolute; top: 14px; right: 0; left: 0; height: 1px; background: color-mix(in oklch, var(--ink) 35%, transparent); }
+    .timeline::after { content: ""; position: absolute; top: 14px; left: 0; width: 26%; height: 2px; background: var(--signal); }
+    .timeline-item { position: absolute; top: 0; display: flex; align-items: center; gap: 9px; color: var(--muted); font: 10px ui-monospace, monospace; }
+    .timeline-item::before { content: ""; display: block; width: 9px; height: 9px; border: 1px solid var(--muted); border-radius: 50%; background: var(--canvas); }
+    .timeline-item.active { left: 24%; color: var(--ink); }
+    .timeline-item.active::before { width: 13px; height: 13px; border: 3px solid var(--signal); background: var(--canvas); box-shadow: 0 0 0 4px var(--signal-soft); }
+    .timeline-item.next { right: 0; }
+    .timeline-item.next::before { border-style: dashed; }
+    .timeline-caption { position: absolute; left: 0; top: 26px; color: var(--muted); font-size: 10px; }
+    .timeline-count { position: absolute; right: 0; top: 26px; color: var(--muted); font: 10px ui-monospace, monospace; }
+
+    .details { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--hairline); }
+    .details div { padding: 18px 20px; border-right: 1px solid var(--hairline); }
+    .details div:last-child { border-right: 0; }
+    .details strong { display: block; margin-bottom: 6px; color: var(--signal); font-size: 13px; }
+    .details span { color: var(--secondary); font-size: 12px; line-height: 1.6; }
+    .recommend { margin-top: 30px; padding: 22px 24px; border: 1px solid color-mix(in oklch, var(--signal) 58%, var(--hairline)); background: color-mix(in oklch, var(--signal) 7%, var(--surface)); }
+    .recommend strong { color: var(--signal); }
+    .recommend p { margin: 8px 0 0; color: var(--secondary); font-size: 14px; line-height: 1.65; }
+    footer { margin-top: 70px; color: var(--muted); font-size: 12px; }
+    @media (max-width: 800px) {
+      .wrap { width: min(100% - 28px, 560px); padding-top: 42px; }
+      .diagnosis, .details { grid-template-columns: 1fr; }
+      .section-head { display: block; }
+      .note { display: block; margin-top: 8px; }
+      .stage { min-height: 650px; }
+      .stage-label, .stage-title, .stage-arrows { left: 24px; }
+      .stage-title { bottom: 158px; font-size: 42px; }
+      .carousel-track { right: -84px; bottom: 174px; }
+      .issue-card { width: 290px; }
+      .issue-card.peek { width: 150px; }
+      .issue-cover { height: 180px; }
+      .timeline { right: 24px; bottom: 92px; left: 24px; }
+      .details div { border-right: 0; border-bottom: 1px solid var(--hairline); }
+      .details div:last-child { border-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="eyebrow">weekly / tidal carousel</div>
+    <h1>让周刊像在时间里继续生长。</h1>
+    <p class="intro">这次不再做“几个卡片横向排列”。借鉴你发来的参考图，把期刊卡片做成一个小场景：有潮汐、有前后关系，也有一条慢慢延伸的时间轴。</p>
+
+    <section>
+      <div class="section-head"><h2>01 / 参考图带来的真正灵感</h2><span class="note">不是照抄插画，而是借它的空间关系</span></div>
+      <div class="diagnosis">
+        <article><div class="num">01 / 舞台</div><h3>背景先形成一个场景</h3><p>不是把卡片放进空白容器，而是先用一块有弧度的色面托住它们。</p></article>
+        <article><div class="num">02 / 高低</div><h3>当前项轻轻浮起来</h3><p>中心卡片抬高一点，旁边卡片退后一点，轮播关系不用解释就能看懂。</p></article>
+        <article><div class="num">03 / 时间</div><h3>卡片后面还有未来</h3><p>用节点和细线暗示周刊会持续更新，不需要虚构第二期内容。</p></article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>02 / 潮汐时间轴轮播</h2><span class="note">Tab、背景 03、卡片所在位置全部不动</span></div>
+      <div class="design-card">
+        <div class="design-head"><h3>最终建议稿</h3><p>当前期是唯一主角，下一期只以“即将出现”的邻卡存在。箭头、标题、时间轴都属于卡片舞台。</p></div>
+        <div class="stage">
+          <div class="stage-grid"></div>
+          <svg class="stage-wave" viewBox="0 0 1200 535" preserveAspectRatio="none" aria-hidden="true">
+            <path class="wave-3" d="M0 346C168 283 291 300 438 347c193 61 310 85 447 19 144-70 207-146 315-155v324H0Z" />
+            <path class="wave-2" d="M0 390c173-58 274-17 424 25 159 45 296 63 435 8 142-57 226-115 341-103v215H0Z" />
+            <path d="M0 430c154-54 277-29 410 8 176 49 319 38 461-15 118-44 204-73 329-42v154H0Z" />
+          </svg>
+          <div class="stage-label mono">WEEKLY <span>每周一更新 · 01 期</span></div>
+          <strong class="stage-title">把工具<br>用旧</strong>
+          <div class="stage-arrows"><span class="arrow active">‹</span><span class="arrow">›</span></div>
+          <div class="carousel-track">
+            <article class="issue-card active">
+              <div class="issue-cover"><img src="assets/weekly-current.png" alt="第 01 期封面"></div>
+              <div class="issue-info"><div class="top mono"><span>ISSUE 01</span><span>2026.09.07</span></div><h4>把工具用旧</h4><p>新的东西没那么多了，倒是几件用旧的工具开始显出好处。</p><a href="#">读这一期</a></div>
+            </article>
+            <article class="issue-card peek" aria-label="下一期预留位置">
+              <div class="issue-cover"></div>
+              <div class="issue-info"><div class="top mono"><span>NEXT</span></div><h4>下一期</h4><p>正在生长</p></div>
+            </article>
+          </div>
+          <div class="timeline" aria-label="周刊时间轴"><span class="timeline-item active">01 / 2026.09.07</span><span class="timeline-item next">NEXT</span><span class="timeline-caption">从这里开始记录</span><span class="timeline-count">01 / ∞</span></div>
+        </div>
+        <div class="details"><div><strong>潮汐色面</strong><span>用现有的钴蓝和信号青做有机曲线，软化页面原本锋利的网格。</span></div><div><strong>错落卡片</strong><span>当前期抬高，下一期露出边缘。不是标准等高卡片列表。</span></div><div><strong>时间轴</strong><span>有一期就显示一期，未来用节点表达，不用假内容填空。</span></div></div>
+      </div>
+      <div class="recommend"><strong>这版的核心变化</strong><p>不是把卡片做得更复杂，而是给它一个“时间正在经过”的感觉。你的页面仍然是深色、克制、带网格的，但期刊卡片会有一点柔软和生命力。</p></div>
+    </section>
+
+    <footer>视觉讨论稿，仅用于确认方向，不修改现有页面代码。</footer>
+  </main>
+</body>
+</html>

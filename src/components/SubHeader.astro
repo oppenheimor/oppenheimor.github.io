@@ -6,7 +6,7 @@ interface Props {
 const { section } = Astro.props;
 
 const links = [
-  { href: '/weekly', label: '周刊', key: 'weekly' },
+  { href: '/?garden=weekly#garden', label: '周刊', key: 'weekly' },
   { href: '/tools', label: '工具箱', key: 'tools' },
 ];
 ---
@@ -70,7 +70,7 @@ const links = [
     border: 1.5px solid var(--ink);
     border-radius: 50%;
     background: var(--signal);
-    box-shadow: 0 0 14px oklch(0.79 0.105 205 / 0.3);
+    box-shadow: 0 0 14px oklch(0.8 0.006 90 / 0.22);
   }
 
   nav { display: flex; gap: 22px; }
